@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Registration - PennStateSoft MSS</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
+</head>
+<body>
+<header>
+    <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
+    <nav>
+        <ul>
+        <li><a href="login">Login</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+  <h1>Create a New Account</h1>
+
+  <form id="registration-form">
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" name="firstName">
+
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" name="lastName">
+
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username">
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password">
+
+    <label for="confirm-password">Confirm Password:</label>
+    <input type="password" id="confirm-password" name="confirm-password">
+
+    <input type="submit" value="Register">
+  </form>
+  <div id="error-message"></div>
+</main>
+<script type="module" src="../client/client.js"></script>
+
+<footer>
+  <!-- footer details can be inserted here -->
+</footer>
+</body>
+</html>

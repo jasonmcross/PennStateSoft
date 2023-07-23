@@ -1,13 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>PSS Meets</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
 </head>
 
 <body>
+<header>
+    <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
+    <nav>
+        <ul>
+            <li><a href="client-profile">Profile</a></li>
+            <li><a href="create-meeting">Create Meeting</a></li>
+            <li><a href="file-complaint">File Complaint</a></li>
+            <li><button type="button" id="logout">Logout</button></li>
+        </ul>
+    </nav>
+</header>
 
+<main>
+    <h1>Welcome, </h1>
+    <section id="upcoming-meetings">
+        <h2>Upcoming Meetings</h2>
+        <table id="meeting-table">
+            <tr>
+                <th>Meeting Name</th>
+                <th>Meeting Date</th>
+                <th>Meeting Time</th>
+                <th>Meeting Room</th>
+                <th>Meeting Attendees</th>
+                <th>Meeting Type</th>
+            </tr>
+        </table>
+    </section>
+
+    <section id="created-meetings">
+        <h2>My Created Meetings</h2>
+        <!-- A list or table with meetings created by the client can be inserted here -->
+    </section>
+
+    <section id="participation-meetings">
+        <h2>Meetings I'm Participating In</h2>
+        <!-- A list or table with meetings the client is participating in can be inserted here -->
+    </section>
+</main>
+<script type="module" src="../client/client.js"></script>
+
+<footer>
+    <!-- footer details can be inserted here -->
+</footer>
 </body>
-
 </html>
+

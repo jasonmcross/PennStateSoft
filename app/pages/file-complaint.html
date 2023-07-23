@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>File Complaint - PennStateSoft MSS</title>
+  <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
+
+</head>
+<body>
+<header>
+  <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
+  <nav>
+    <ul>
+      <li><a href="home">Home</a></li>
+      <li><a href="client-profile">Profile</a></li>
+      <li><a href="create-meeting">Create Meeting</a></li>
+      <li><button type="button" id="logout">Logout</button></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <h1>File a Complaint</h1>
+
+  <form id="complaint-form">
+    <label for="subject">Subject:</label>
+    <input type="text" id="subject" name="subject">
+
+    <label for="message">Complaint:</label>
+    <textarea id="message" name="message"></textarea>
+
+    <input type="submit" value="Submit Complaint">
+  </form>
+</main>
+<script type="module" src="../client/client.js"></script>
+
+<footer>
+  <!-- footer details can be inserted here -->
+</footer>
+</body>
+</html>
