@@ -5,15 +5,25 @@
     <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
 </head>
 <body>
-<div class="login-container">
-    <h2>PennStateSoft Login</h2>
+<header>
+    <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
+    <h1>PennStateSoft Login</h1>
+</header>
+
+<div class="container login-container">
     <form id="login-form">
         <input type="text" id="username" placeholder="Username" required>
         <input type="password" id="password" placeholder="Password" required>
         <button type="submit">Log In</button>
     </form>
     <div id="error-message"></div>
+    <p>Don't have an account? <a href="register">Register here</a></p>
 </div>
+
+<footer>
+    <p>PennStateSoft &copy; 2023</p>
+</footer>
+
 <script type="module" src="../client/client.js"></script>
 </body>
 </html>

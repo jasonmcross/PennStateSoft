@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Meeting Details - PennStateSoft MSS</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
+</head>
+<body>
+<header>
+    <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
+  <nav>
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="profile.html">Profile</a></li>
+      <li><a href="create_meeting.html">Create Meeting</a></li>
+      <li><a href="complaints.html">File Complaint</a></li>
+      <li><a href="logout.html">Logout</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <h1>Meeting Details</h1>
+
+  <section id="meeting-details">
+    <h2>Meeting Name: [Meeting Name]</h2>
+    <p>Date: [Meeting Date]</p>
+    <p>Time: [Meeting Time]</p>
+    <p>Room: [Meeting Room]</p>
+    <p>Meeting Creator: [Meeting Creator]</p>
+    <h3>Attendees:</h3>
+    <ul id="attendees-list">
+      <!-- Each attendee could be an item in this list -->
+      <li>[Attendee 1]</li>
+      <li>[Attendee 2]</li>
+      <!-- etc. -->
+    </ul>
+    <!-- Include an Edit button only if the client is the meeting creator -->
+    <button id="edit-meeting-btn">Edit Meeting</button>
+  </section>
+
+  <!-- This form will only appear when the Edit button is clicked -->
+  <form id="edit-meeting-form" style="display: none;">
+    <h2>Edit Meeting</h2>
+    <!-- Include fields to edit the meeting details -->
+    <input type="submit" value="Save Changes">
+  </form>
+</main>
+<script type="module" src="../client/client.js"></script>
+
+<footer>
+  <!-- footer details can be inserted here -->
+</footer>
+</body>
+</html>

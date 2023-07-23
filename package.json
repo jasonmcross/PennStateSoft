@@ -2,7 +2,7 @@
   "name": "pennstatesoft",
   "version": "1.0.0",
   "description": "A local meeting management app",
-  "main": "server.js",
+  "main": "server/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/robbamyers/PennStateSoft#readme",
   "dependencies": {
+    "cookie-parser": "^1.4.6",
     "crypto-js": "^4.1.1",
     "express": "^4.18.2"
   }
