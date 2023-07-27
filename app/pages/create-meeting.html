@@ -1,57 +1,60 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Create Meeting - PennStateSoft MSS</title>
     <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
 </head>
+
 <body>
-<header>
-    <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
-    <nav>
-        <ul>
-            <li><a href="home">Home</a></li>
-            <li><a href="client-profile">Profile</a></li>
-            <li><a href="file-complaint">File Complaint</a></li>
-            <li><a href="logout.html">Logout</a></li>
-        </ul>
-    </nav>
-</header>
+    <header>
+        <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
+        <nav>
+            <ul>
+                <li><a href="home">Home</a></li>
+                <li><a href="client-profile">Profile</a></li>
+                <li><a href="file-complaint">File Complaint</a></li>
+                <li><button type="button" id="logout">Logout</button></li>
+            </ul>
+        </nav>
+    </header>
 
-<main>
-    <h1>Create a New Meeting</h1>
+    <main>
+        <h1>Create a New Meeting</h1>
 
-    <form id="create-meeting-form">
-        <label for="meeting-name">Meeting Name:</label>
-        <input type="text" id="meeting-name" name="meeting-name">
+        <form id="create-meeting-form">
+            <label for="meeting-name">Meeting Name:</label>
+            <input type="text" id="meeting-name" name="meeting-name">
 
-        <label for="date">Date:</label>
-        <input type="date" id="date" name="date">
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date">
 
-        <label for="time">Time:</label>
-        <input type="time" id="time" name="time" min="09:00" max="17:00">
+            <label for="time">Time:</label>
+            <input type="time" id="time" name="time" min="09:00" max="17:00">
 
-        <label for="room">Room:</label>
-        <select id="room" name="room">
-            <!-- Option values would ideally be fetched and populated dynamically from the database -->
-            <option value="1">Room 1</option>
-            <option value="2">Room 2</option>
-            <!-- Add more options as needed -->
-        </select>
+            <label for="room">Room:</label>
+            <select id="room" name="room">
+                <!-- Option values would ideally be fetched and populated dynamically from the database -->
+                <option value="1">Room 1</option>
+                <option value="2">Room 2</option>
+                <!-- Add more options as needed -->
+            </select>
 
-        <label for="attendees">Add Attendees:</label>
-        <input type="text" id="attendees" name="attendees" placeholder="Enter attendee emails, separated by commas">
+            <label for="attendees">Add Attendees:</label>
+            <input type="text" id="attendees" name="attendees" placeholder="Enter attendee emails, separated by commas">
 
-        <label>Room Type:</label>
-        <input type="radio" id="regular" name="room-type" value="regular">
-        <label for="regular">Regular</label>
-        <input type="radio" id="special" name="room-type" value="special">
-        <label for="special">Special (Requires $100 fee)</label>
-        <button type="submit">Create Meeting</button>
-    </form>
-</main>
-<script type="module" src="../client/client.js"></script>
-<footer>
-    <!-- footer details can be inserted here -->
-</footer>
+            <label>Room Type:</label>
+            <input type="radio" id="regular" name="room-type" value="regular">
+            <label for="regular">Regular</label>
+            <input type="radio" id="special" name="room-type" value="special">
+            <label for="special">Special (Requires $100 fee)</label>
+            <button type="submit">Create Meeting</button>
+        </form>
+    </main>
+    <script type="module" src="../client/client.js"></script>
+    <footer>
+        <!-- footer details can be inserted here -->
+    </footer>
 </body>
+
 </html>

@@ -1,1 +1,114 @@
-{"users":{"t":{"password":"e3b98a4da31a127d4bde6e43033f66ba274cab0eb7eb1c70ec41402bf6273dd8","firstName":"T","lastName":"T","type":"client"},"a":{"username":"a","password":"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb","firstName":"a","lastName":"a","type":"client"}},"rooms":[],"meetings":[{"meetingName":"","meetingDate":"","meetingTime":"","meetingRoom":"1","attendees":"","regular":"regular","special":"special"},{"meetingName":"","meetingDate":"","meetingTime":"","meetingRoom":"1","attendees":"","regular":"regular","special":"special"},{"meetingName":"","meetingDate":"","meetingTime":"","meetingRoom":"1","attendees":"","regular":"regular","special":"special"},{"organizer":"t","meetingName":"test","meetingDate":"","meetingTime":"","meetingRoom":"1","attendees":"","regular":"regular","special":"special"},{"organizer":"t","meetingName":"Test","meetingDate":"1992-09-23","meetingTime":"14:00","meetingRoom":"1","attendees":"robbamyers@icloud.com","regular":"regular","special":"special"},{"organizer":"t","meetingName":"test123","meetingDate":"1999-09-09","meetingTime":"17:00","meetingRoom":"1","attendees":"test","type":"regular"},{"organizer":"t","meetingName":"test1234","meetingDate":"2023-01-01","meetingTime":"15:03","meetingRoom":"1","attendees":"test","type":"special"},{"organizer":"t","meetingName":"t","meetingDate":"1995-04-30","meetingTime":"15:01","meetingRoom":"1","attendees":"hey","type":{"0":{},"1":{}}},{"organizer":"t","meetingName":"t","meetingDate":"1995-04-30","meetingTime":"15:01","meetingRoom":"1","attendees":"hey","type":"special"}],"complaints":[]}
+{
+    "users": {
+        "t": {
+            "password": "e3b98a4da31a127d4bde6e43033f66ba274cab0eb7eb1c70ec41402bf6273dd8",
+            "firstName": "T",
+            "lastName": "T",
+            "type": "client"
+        },
+        "a": {
+            "username": "a",
+            "password": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+            "firstName": "a",
+            "lastName": "a",
+            "type": "client"
+        },
+        "jasonmcross": {
+            "username": "jasonmcross",
+            "password": "06b9a6eacd7a77b9361123fd19776455eb16b9c83426a1abbf514a414792b73f",
+            "firstName": "Jason",
+            "lastName": "Cross",
+            "type": "client"
+        }
+    },
+    "rooms": [],
+    "meetings": [
+        {
+            "meetingName": "",
+            "meetingDate": "",
+            "meetingTime": "",
+            "meetingRoom": "1",
+            "attendees": "",
+            "regular": "regular",
+            "special": "special"
+        },
+        {
+            "meetingName": "",
+            "meetingDate": "",
+            "meetingTime": "",
+            "meetingRoom": "1",
+            "attendees": "",
+            "regular": "regular",
+            "special": "special"
+        },
+        {
+            "meetingName": "",
+            "meetingDate": "",
+            "meetingTime": "",
+            "meetingRoom": "1",
+            "attendees": "",
+            "regular": "regular",
+            "special": "special"
+        },
+        {
+            "organizer": "t",
+            "meetingName": "test",
+            "meetingDate": "",
+            "meetingTime": "",
+            "meetingRoom": "1",
+            "attendees": "",
+            "regular": "regular",
+            "special": "special"
+        },
+        {
+            "organizer": "t",
+            "meetingName": "Test",
+            "meetingDate": "1992-09-23",
+            "meetingTime": "14:00",
+            "meetingRoom": "1",
+            "attendees": "robbamyers@icloud.com",
+            "regular": "regular",
+            "special": "special"
+        },
+        {
+            "organizer": "t",
+            "meetingName": "test123",
+            "meetingDate": "1999-09-09",
+            "meetingTime": "17:00",
+            "meetingRoom": "1",
+            "attendees": "test",
+            "type": "regular"
+        },
+        {
+            "organizer": "t",
+            "meetingName": "test1234",
+            "meetingDate": "2023-01-01",
+            "meetingTime": "15:03",
+            "meetingRoom": "1",
+            "attendees": "test",
+            "type": "special"
+        },
+        {
+            "organizer": "t",
+            "meetingName": "t",
+            "meetingDate": "1995-04-30",
+            "meetingTime": "15:01",
+            "meetingRoom": "1",
+            "attendees": "hey",
+            "type": {
+                "0": {},
+                "1": {}
+            }
+        },
+        {
+            "organizer": "t",
+            "meetingName": "t",
+            "meetingDate": "1995-04-30",
+            "meetingTime": "15:01",
+            "meetingRoom": "1",
+            "attendees": "hey",
+            "type": "special"
+        }
+    ],
+    "complaints": []
+}
