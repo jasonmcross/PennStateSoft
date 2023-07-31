@@ -5,6 +5,9 @@ const path = require('path');
 const cookieParser = require('cookie-parser');  // Importing cookie-parser
 const data = require('../database/data.json');  // Importing users.json
 const fs = require('fs');
+
+const { v4: uuidv4 } = require('uuid');
+
 // Parse incoming JSON
 app.use(express.json());
 
@@ -92,11 +95,20 @@ app.get('/create-meeting', function(req, res) {
 app.post('/create-meeting', function(req, res) {
   if(req.cookies.session === '1') {
     let newData = data;
-    newData['meetings'].push(req.body);
+    let meetingData = req.body
+    meetingData['id'] = uuidv4()
+    newData['meetings'].push(meetingData);
     fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function(err) {});
+    res.statusCode = 201
     res.json({ data: newData });
   }
 });
+
+app.get('/meeting/:id', function(req, res) {
+  if(req.cookies.session === '1') {
+    res.sendFile(path.join(__dirname, "../app/pages/meeting-detail.html"));
+  }
+})
 
 app.get('/file-complaint', function(req, res) {
   if(req.cookies.session === '1') {

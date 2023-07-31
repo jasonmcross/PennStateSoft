@@ -98,6 +98,21 @@ if (window.location.pathname === '/client-profile') {
   document.getElementById("lastName").innerHTML = localStorage.getItem("lastName");
 }
 
+let url_arr = window.location.href.split("/")
+if (url_arr[url_arr.length-2] === "meeting") {
+  console.log('On the meeting page')
+  let meetings = JSON.parse(localStorage.getItem("meetings"));
+  let currentMeeting = meetings.filter(meeting => meeting.id === url_arr[url_arr.length-1])[0];
+  currentMeeting.attendees
+  document.getElementById("meeting-date").innerHTML = currentMeeting.meetingDate
+  document.getElementById("meeting-name").innerHTML = currentMeeting.meetingName
+  document.getElementById("meeting-room").innerHTML = currentMeeting.meetingRoom
+  document.getElementById("meeting-time").innerHTML = currentMeeting.meetingTime
+  document.getElementById("organizer").innerHTML = currentMeeting.organizer
+  document.getElementById("room-type").innerHTML = currentMeeting.type
+  //Currently reprints attendees as just one string. Not as list elements
+  document.getElementById("attendees-list").innerHTML = currentMeeting.attendees
+}
 if (window.location.pathname === '/create-meeting') {
   document.getElementById('create-meeting-form').addEventListener('submit', async function (event){
     event.preventDefault();
@@ -123,8 +138,8 @@ if (window.location.pathname === '/create-meeting') {
         type: type,
       })
     }).then(response => {
-      console.log(response);
-      if (response.status === 200) {
+      //console.log(JSON.parse(response.body));
+      if (response.status === 201) {
         // add meeting to existing meetings in local storage
         let meetings = JSON.parse(localStorage.getItem("meetings"));
         let type = document.getElementsByName('room-type');
@@ -134,17 +149,11 @@ if (window.location.pathname === '/create-meeting') {
             break;
           }
         }
-        let newMeeting = {
-          organizer: localStorage.getItem("username"),
-          meetingName: document.getElementById('meeting-name').value,
-          meetingDate: document.getElementById('date').value,
-          meetingTime: document.getElementById('time').value,
-          meetingRoom: document.getElementById('room').value,
-          attendees: document.getElementById('attendees').value,
-          type: type,
-        };
-        meetings.push(newMeeting);
-        localStorage.setItem('meetings', JSON.stringify(meetings));
+
+        response.json().then(body => {
+          localStorage.setItem('meetings', JSON.stringify(body.data.meetings));
+          window.location.href = '/meeting/' + body.data.meetings[body.data.meetings.length-1].id
+        })
         }
     });
   });
