@@ -103,7 +103,19 @@ if (url_arr[url_arr.length-2] === "meeting") {
   console.log('On the meeting page')
   let meetings = JSON.parse(localStorage.getItem("meetings"));
   let currentMeeting = meetings.filter(meeting => meeting.id === url_arr[url_arr.length-1])[0];
-  currentMeeting.attendees
+  let attend_arr = currentMeeting.attendees.split(", ");
+  var ul = document.getElementById('attendees-list');
+
+  attend_arr.forEach(renderProductList);
+
+  function renderProductList(element, index, arr) {
+      var li = document.createElement('li');
+      li.setAttribute('class','item');
+
+      ul.appendChild(li);
+
+      li.innerHTML= element;
+  }
   document.getElementById("meeting-date").innerHTML = currentMeeting.meetingDate
   document.getElementById("meeting-name").innerHTML = currentMeeting.meetingName
   document.getElementById("meeting-room").innerHTML = currentMeeting.meetingRoom
