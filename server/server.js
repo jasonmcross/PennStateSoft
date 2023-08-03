@@ -1,47 +1,69 @@
-// Importing express module
 const express = require("express");
-const app = express();
 const path = require('path');
-const cookieParser = require('cookie-parser');  // Importing cookie-parser
-const data = require('../database/data.json');  // Importing users.json
+const cookieParser = require('cookie-parser');
 const fs = require('fs');
-
 const { v4: uuidv4 } = require('uuid');
+const data = require('../database/data.json');
 
-// Parse incoming JSON
-app.use(express.json());
+const app = express();
 
-app.use(cookieParser());  // Use cookie-parser middleware
-
-// Used to bring the static CSS files into the server
+app.use(express.json(), cookieParser());
 app.use(express.static(path.join(__dirname, '../app')));
 app.use(express.static(path.join(__dirname, '../database')));
 
-// Handling GET / request
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "../app/pages/login.html")));
 
-app.get("/", (req, res) => {
-  const filePath = path.join(__dirname, "../app/pages/login.html");
-  res.sendFile(filePath);
-});
+app.post('/login', (req, res) => handleLoginRequest(req, res));
+app.post('/register', (req, res) => handleRegisterRequest(req, res));
+app.post('/logout', (req, res) => res.clearCookie('session').json({ message: 'Logout successful' }));
 
-// Handling POST /login request
-app.post('/login', function(req, res) {
-  let username = req.body.username;
-  let hashedPassword = req.body.password;
+app.get('/client-home', (req, res) => handleClientHomeRequest(req, res));
+app.get('/admin-home', (req, res) => handleAdminHomeRequest(req, res));
+app.get('/client-profile', (req, res) => handleClientProfileRequest(req, res));
+app.get('/create-meeting', (req, res) => handleCreateMeetingRequest(req, res));
+app.post('/create-meeting', (req, res) => handlePostCreateMeetingRequest(req, res));
+app.get('/file-complaint', (req, res) => handleFileComplaintRequest(req, res));
+app.get('/register', (req, res) => res.sendFile(path.join(__dirname, "../app/pages/registration.html")));
+
+app.listen(3000, () => console.log("Server is Running"));
+
+function handleLoginRequest(req, res) {
+  let {username, password: hashedPassword} = req.body;
   let users = data['users'];
+
   if(users[username] && users[username].password === hashedPassword) {
-    res.cookie('session', '1', { maxAge: 3600000, httpOnly: true });
-    let meetings = data.meetings.filter(meeting => meeting.organizer === username);
-    let attendee = data.meetings.filter(meeting => meeting.attendees.includes(username));
-    let complaints = data.complaints.filter(complaint => complaint.username === username);
-    // Send back the user's first name, last name, and type, along with all rooms, meetings where they are an organizer or in the list of attendees, or complaints they have file
-    res.json({ firstName: users[username].firstName, lastName: users[username].lastName, type: users[username].type, meetings: meetings, attendee: attendee, complaints: complaints });
+    let sessionId = uuidv4();
+
+    // Remove all previous sessions for the user
+    for(let session in data['sessions']) {
+      if(data['sessions'][session].username === username) {
+        delete data['sessions'][session];
+      }
+    }
+
+    if (!data.hasOwnProperty("sessions")) {
+      data['sessions'] = {}
+    }
+    // Add a new session to the data
+    data['sessions'][sessionId] = {username, expires: Date.now() + 3600000};
+
+    // Write the updated data back to the JSON file
+    fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(data), (err) => {
+      if(err) {
+        return res.status(500).json({message: 'Error updating session information'});
+      }
+    });
+
+    // Set the session ID as a cookie
+    res.cookie('sessionId', sessionId, { maxAge: 3600000, httpOnly: true });
+    res.json({redirectTo: users[username].type === 'client' ? '/client-home' : '/admin-home'})
   } else {
     res.status(401).json({ message: 'Invalid username or password' });
   }
-});
+}
 
-app.post('/register', function(req, res) {
+
+function handleRegisterRequest(req, res) {
   console.log(req.body);
   let username = req.body.username;
   let hashedPassword = req.body.password;
@@ -53,6 +75,7 @@ app.post('/register', function(req, res) {
     res.status(401).json({ message: 'Username already exists' });
   } else {
     let newData = data;
+    let sessionId = uuidv4();
     newData['users'][username] = {
       username: username,
       password: hashedPassword,
@@ -60,39 +83,45 @@ app.post('/register', function(req, res) {
       lastName: lastName,
       type: type
     };
+    newData['sessions'][sessionId] = {
+      username: username,
+    };
     fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function(err) {});
-    res.cookie('session', '1', { maxAge: 3600000, httpOnly: true });
+    res.cookie('sessionId', sessionId, { maxAge: 3600000, httpOnly: true });
     res.json({ firstName: firstName, lastName: lastName, type: type, meetings: [], attendee: [], complaints: [] });
   }
-});
+}
 
-app.post('/logout', function(req, res) {
-  res.clearCookie('session');
-  res.json({ message: 'Logout successful' });
-});
-
-app.get('/home', function(req, res) {
-  if(req.cookies.session === '1') {
-    res.sendFile(path.join(__dirname, "../app/pages/home.html"));
+function handleClientHomeRequest(req, res) {
+  console.log(req.cookies.sessionId);
+  console.log(data['sessions'][req.cookies.sessionId])
+  if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
+    res.sendFile(path.join(__dirname, "../app/pages/client-home.html"));
   }
   else {
     res.redirect('/');
   }
-})
+}
 
-app.get('/client-profile', function(req, res) {
+function handleAdminHomeRequest(req, res) {
+  if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
+    res.sendFile(path.join(__dirname, "../app/pages/admin-home.html"));
+  }
+}
+
+function handleClientProfileRequest(req, res) {
   if(req.cookies.session === '1') {
     res.sendFile(path.join(__dirname, "../app/pages/client-profile.html"));
   }
-})
+}
 
-app.get('/create-meeting', function(req, res) {
+function handleCreateMeetingRequest(req, res) {
   if(req.cookies.session === '1') {
     res.sendFile(path.join(__dirname, "../app/pages/create-meeting.html"));
   }
-})
+}
 
-app.post('/create-meeting', function(req, res) {
+function handlePostCreateMeetingRequest(req, res) {
   if(req.cookies.session === '1') {
     let newData = data;
     let meetingData = req.body
@@ -102,7 +131,7 @@ app.post('/create-meeting', function(req, res) {
     res.statusCode = 201
     res.json({ data: newData });
   }
-});
+};
 
 app.get('/meeting/:id', function(req, res) {
   if(req.cookies.session === '1') {
@@ -110,17 +139,25 @@ app.get('/meeting/:id', function(req, res) {
   }
 })
 
-app.get('/file-complaint', function(req, res) {
+function handleFileComplaintRequest(req, res) {
   if(req.cookies.session === '1') {
     res.sendFile(path.join(__dirname, "../app/pages/file-complaint.html"));
   }
-})
+}
 
-app.get('/register', function(req, res) {
-  res.sendFile(path.join(__dirname, "../app/pages/registration.html"));
-});
+function checkSession(sessionId) {
+  if(sessionId && data['sessions'][sessionId] && data['sessions'][sessionId]['expires'] > Date.now()) {
+    return true;
+  }
+  return false;
+}
 
-// Server setup
-app.listen(3000, () => {
-  console.log("Server is Running");
-});
+function checkPermission(sessionId, permission) {
+  if(checkSession(sessionId)) {
+    let username = data['sessions'][sessionId]['username'];
+    if(data['users'][username]['type'] === permission) {
+      return true;
+    }
+  }
+  return false;
+}

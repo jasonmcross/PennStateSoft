@@ -62,7 +62,7 @@ async function handleRegister(event) {
   });
 }
 
-if(window.location.pathname === '/register') {
+if (window.location.pathname === '/register') {
   document.getElementById('registration-form').addEventListener('submit', handleRegister);
 }
 
@@ -70,7 +70,7 @@ if(window.location.pathname === '/register') {
 if (window.location.pathname === '/home') {
   document.getElementById('logout').addEventListener('click', handleLogout);
   let meetings = JSON.parse(localStorage.getItem("meetings"));
-  for(let i = 0; i < meetings.length; i++) {
+  for (let i = 0; i < meetings.length; i++) {
     let meeting = meetings[i];
     let table = document.getElementById('meeting-table');
     let row = table.insertRow();
@@ -90,6 +90,7 @@ if (window.location.pathname === '/home') {
 }
 
 if (window.location.pathname === '/client-profile') {
+  document.getElementById('logout').addEventListener('click', handleLogout);
   console.log(localStorage.getItem("firstName"));
   console.log(localStorage.getItem("lastName"));
   console.log(localStorage.getItem("type"));
@@ -126,11 +127,12 @@ if (url_arr[url_arr.length-2] === "meeting") {
   document.getElementById("attendees-list").innerHTML = currentMeeting.attendees
 }
 if (window.location.pathname === '/create-meeting') {
-  document.getElementById('create-meeting-form').addEventListener('submit', async function (event){
+  document.getElementById('logout').addEventListener('click', handleLogout);
+  document.getElementById('create-meeting-form').addEventListener('submit', async function (event) {
     event.preventDefault();
     let type = document.getElementsByName('room-type');
-    for(let i = 0; i < type.length; i++) {
-      if(type[i].checked) {
+    for (let i = 0; i < type.length; i++) {
+      if (type[i].checked) {
         type = type[i].value;
         break;
       }
@@ -155,8 +157,8 @@ if (window.location.pathname === '/create-meeting') {
         // add meeting to existing meetings in local storage
         let meetings = JSON.parse(localStorage.getItem("meetings"));
         let type = document.getElementsByName('room-type');
-        for(let i = 0; i < type.length; i++) {
-          if(type[i].checked) {
+        for (let i = 0; i < type.length; i++) {
+          if (type[i].checked) {
             type = type[i].value;
             break;
           }
@@ -171,44 +173,44 @@ if (window.location.pathname === '/create-meeting') {
   });
 }
 
-if(window.location.pathname === '/') {
-  document.getElementById('login-form').addEventListener('submit', async function(event) {
-    event.preventDefault();
-    console.log('here');
+if (window.location.pathname === '/file-complaint') {
+  document.getElementById('logout').addEventListener('click', handleLogout);
+}
 
-    var username = document.getElementById('username').value;
-    var password = document.getElementById('password').value;
+if (window.location.pathname === '/') {
+  document.getElementById('login-form').addEventListener('submit', handleLogin);
+}
 
-    var encoder = new TextEncoder();
-    var data = encoder.encode(password);
-    var hash = await window.crypto.subtle.digest('SHA-256', data);
-    var hashedPassword = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+async function handleLogin(event) {
+  event.preventDefault();
+  console.log('here');
 
-    fetch('/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: username,
-        password: hashedPassword
-      })
-    }).then( response => {
-      if(response.status === 200) {
-        response.json().then(data => {
-          localStorage.setItem('username', username),
-          localStorage.setItem('firstName', data.firstName);
-          localStorage.setItem('lastName', data.lastName);
-          localStorage.setItem('type', data.type);
-          localStorage.setItem('meetings', JSON.stringify(data.meetings));
-          localStorage.setItem('attendee', JSON.stringify(data.attendee));
-          localStorage.setItem('complaints', JSON.stringify(data.complaints));
-        });
-        window.location.href = '/home';
-      } else {
-        document.getElementById('error-message').innerText = 'Invalid username or password';
-      }
+  var username = document.getElementById('username').value;
+  var password = document.getElementById('password').value;
+
+  var encoder = new TextEncoder();
+  var data = encoder.encode(password);
+  var hash = await window.crypto.subtle.digest('SHA-256', data);
+  var hashedPassword = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  fetch('/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      username: username,
+      password: hashedPassword
     })
+  }).then(response => {
+    if (response.status === 200) {
+      // get the value of the key 'redirectTo' in the response and redirect to that page
+      response.json().then(data => {
+        window.location.href = data.redirectTo;
+      });
+    } else if (response.status === 401) {
+      document.getElementById('error-message').innerHTML = 'Invalid username or password';
+    }
   });
 }
 

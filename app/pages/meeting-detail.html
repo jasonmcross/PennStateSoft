@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Meeting Details - PennStateSoft MSS</title>
-    <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
+  <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
 </head>
-<body>
-<header>
-    <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
-  <nav>
-    <ul>
-      <li><a href="/dashboard">Dashboard</a></li>
-      <li><a href="/profile">Profile</a></li>
-      <li><a href="/create-meeting">Create Meeting</a></li>
-      <li><a href="/file-complaint">File Complaint</a></li>
-      <li><a href="/logout">Logout</a></li>
-    </ul>
-  </nav>
-</header>
 
-<main>
-  <h1>Meeting Details</h1>
+<body>
+  <header>
+    <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
+    <nav>
+      <ul>
+        <li><a href="/dashboard">Dashboard</a></li>
+        <li><a href="/profile">Profile</a></li>
+        <li><a href="/create_meeting">Create Meeting</a></li>
+        <li><a href="/complaints">File Complaint</a></li>
+        <li><button type="button" id="logout">Logout</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Meeting Details</h1>
 
   <section id="meeting-details">
     <h2>Meeting Name: <span id="meeting-name"></span></h2>
@@ -37,17 +39,18 @@
     <button id="edit-meeting-btn">Edit Meeting</button>
   </section>
 
-  <!-- This form will only appear when the Edit button is clicked -->
-  <form id="edit-meeting-form" style="display: none;">
-    <h2>Edit Meeting</h2>
-    <!-- Include fields to edit the meeting details -->
-    <input type="submit" value="Save Changes">
-  </form>
-</main>
-<script type="module" src="../client/client.js"></script>
+    <!-- This form will only appear when the Edit button is clicked -->
+    <form id="edit-meeting-form" style="display: none;">
+      <h2>Edit Meeting</h2>
+      <!-- Include fields to edit the meeting details -->
+      <input type="submit" value="Save Changes">
+    </form>
+  </main>
+  <script type="module" src="../client/client.js"></script>
 
-<footer>
-  <!-- footer details can be inserted here -->
-</footer>
+  <footer>
+    <!-- footer details can be inserted here -->
+  </footer>
 </body>
+
 </html>
