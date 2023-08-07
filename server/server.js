@@ -41,6 +41,9 @@ function handleLoginRequest(req, res) {
       }
     }
 
+    if (!data.hasOwnProperty("sessions")) {
+      data['sessions'] = {}
+    }
     // Add a new session to the data
     data['sessions'][sessionId] = {username, expires: Date.now() + 3600000};
 
@@ -121,11 +124,20 @@ function handleCreateMeetingRequest(req, res) {
 function handlePostCreateMeetingRequest(req, res) {
   if(req.cookies.session === '1') {
     let newData = data;
-    newData['meetings'].push(req.body);
+    let meetingData = req.body
+    meetingData['id'] = uuidv4()
+    newData['meetings'].push(meetingData);
     fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function(err) {});
+    res.statusCode = 201
     res.json({ data: newData });
   }
-}
+};
+
+app.get('/meeting/:id', function(req, res) {
+  if(req.cookies.session === '1') {
+    res.sendFile(path.join(__dirname, "../app/pages/meeting-detail.html"));
+  }
+})
 
 function handleFileComplaintRequest(req, res) {
   if(req.cookies.session === '1') {

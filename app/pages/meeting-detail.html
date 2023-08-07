@@ -11,10 +11,10 @@
     <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
     <nav>
       <ul>
-        <li><a href="dashboard.html">Dashboard</a></li>
-        <li><a href="profile.html">Profile</a></li>
-        <li><a href="create_meeting.html">Create Meeting</a></li>
-        <li><a href="complaints.html">File Complaint</a></li>
+        <li><a href="/dashboard">Dashboard</a></li>
+        <li><a href="/profile">Profile</a></li>
+        <li><a href="/create_meeting">Create Meeting</a></li>
+        <li><a href="/complaints">File Complaint</a></li>
         <li><button type="button" id="logout">Logout</button></li>
       </ul>
     </nav>
@@ -23,22 +23,21 @@
   <main>
     <h1>Meeting Details</h1>
 
-    <section id="meeting-details">
-      <h2>Meeting Name: [Meeting Name]</h2>
-      <p>Date: [Meeting Date]</p>
-      <p>Time: [Meeting Time]</p>
-      <p>Room: [Meeting Room]</p>
-      <p>Meeting Creator: [Meeting Creator]</p>
-      <h3>Attendees:</h3>
-      <ul id="attendees-list">
-        <!-- Each attendee could be an item in this list -->
-        <li>[Attendee 1]</li>
-        <li>[Attendee 2]</li>
-        <!-- etc. -->
-      </ul>
-      <!-- Include an Edit button only if the client is the meeting creator -->
-      <button id="edit-meeting-btn">Edit Meeting</button>
-    </section>
+  <section id="meeting-details">
+    <h2>Meeting Name: <span id="meeting-name"></span></h2>
+    <p>Date: <span id="meeting-date"></span></p>
+    <p>Time: <span id="meeting-time"></span></p>
+    <p>Room: <span id="meeting-room"></span></p>
+    <p>Meeting Creator: <span id="organizer"></span></p>
+    <p>Room Type: <span id="room-type"></span></p>
+    <h3>Attendees:</h3>
+    <ul id="attendees-list">
+      <!-- Each attendee could be an item in this list -->
+      <!-- etc. -->
+    </ul>
+    <!-- Include an Edit button only if the client is the meeting creator -->
+    <button id="edit-meeting-btn">Edit Meeting</button>
+  </section>
 
     <!-- This form will only appear when the Edit button is clicked -->
     <form id="edit-meeting-form" style="display: none;">
