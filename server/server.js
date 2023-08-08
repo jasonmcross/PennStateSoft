@@ -18,6 +18,7 @@ app.post('/register', (req, res) => handleRegisterRequest(req, res));
 app.post('/logout', (req, res) => res.clearCookie('session').json({ message: 'Logout successful' }));
 app.post('/payment-information', (req, res) => handleEditPaymentInformationRequest(req, res));
 
+app.post('/edit-profile', (req, res) => handleEditProfileRequest(req, res));
 app.get('/client-home', (req, res) => handleClientHomeRequest(req, res));
 app.get('/admin-home', (req, res) => handleAdminHomeRequest(req, res));
 app.get('/client-profile', (req, res) => handleClientProfileRequest(req, res));
@@ -57,7 +58,9 @@ function handleLoginRequest(req, res) {
 
     // Set the session ID as a cookie
     res.cookie('sessionId', sessionId, { maxAge: 3600000, httpOnly: true });
-    res.json({redirectTo: users[username].type === 'client' ? '/client-home' : '/admin-home'})
+    let userData = getDataForUser(username);
+    res.json({redirectTo: users[username].type === 'client' ? '/client-home' : '/admin-home', userData
+    })
   } else {
     res.status(401).json({ message: 'Invalid username or password' });
   }
@@ -146,11 +149,8 @@ function handleFileComplaintRequest(req, res) {
 function handleEditPaymentInformationRequest(req, res) {
   if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     let user = data['sessions'][req.cookies.sessionId]['username'];
-    console.log(user);
     let newData = data;
     newData['users'][user]['paymentInformation'] = req.body;
-    console.log(req.body);
-    console.log(newData['users'][user]['paymentInformation']);
     fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function(err) {});
     res.statusCode = 201
     res.json({ data: newData });
@@ -172,4 +172,27 @@ function checkPermission(sessionId, permission) {
     }
   }
   return false;
+}
+
+function handleEditProfileRequest(req, res) {
+  if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
+    let user = data['sessions'][req.cookies.sessionId]['username'];
+    let newData = data;
+    newData['users'][user]['firstName'] = req.body.firstName;
+    newData['users'][user]['lastName'] = req.body.lastName;
+    fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function(err) {});
+    res.statusCode = 200
+    res.json({ data: getDataForUser(user) });
+  }
+}
+
+function getDataForUser(username) {
+  return {
+    firstName: data['users'][username]['firstName'],
+    lastName: data['users'][username]['lastName'],
+    type: data['users'][username]['type'],
+    meetings: data['meetings'].filter(meeting => meeting['client'] === username),
+    attendee: data['meetings'].filter(meeting => meeting['attendees'].includes(username)),
+    complaints: data['complaints'].filter(complaint => complaint['client'] === username),
+  };
 }
