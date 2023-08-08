@@ -2,9 +2,10 @@ if (window.location.pathname === '/register') {
   document.getElementById('registration-form').addEventListener('submit', handleRegister);
 }
 
-if (window.location.pathname === '/home') {
+if (window.location.pathname === '/client-home') {
   document.getElementById('logout').addEventListener('click', handleLogout);
-  let meetings = JSON.parse(localStorage.getItem("meetings"));
+  let userData = JSON.parse(localStorage.getItem("userData"));
+  let meetings = userData.meetings;
   for (let i = 0; i < meetings.length; i++) {
     let meeting = meetings[i];
     let table = document.getElementById('meeting-table');
@@ -212,22 +213,10 @@ async function handleCreateMeeting(event) {
       type: type,
     })
   }).then(response => {
-    //console.log(JSON.parse(response.body));
-    if (response.status === 201) {
-      // add meeting to existing meetings in local storage
-      let meetings = JSON.parse(localStorage.getItem("meetings"));
-      let type = document.getElementsByName('room-type');
-      for (let i = 0; i < type.length; i++) {
-        if (type[i].checked) {
-          type = type[i].value;
-          break;
-        }
-      }
-
-      response.json().then(body => {
-        localStorage.setItem('meetings', JSON.stringify(body.data.meetings));
-        window.location.href = '/meeting/' + body.data.meetings[body.data.meetings.length-1].id
-      })
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem("userData", JSON.stringify(data['userData']));
+      });
     }
   });
 }
