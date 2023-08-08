@@ -196,5 +196,6 @@ function getDataForUser(username) {
     meetings: data['meetings'].filter(meeting => meeting['organizer'] === username),
     attendee: data['meetings'].filter(meeting => meeting['attendees'].includes(username)),
     complaints: data['complaints'].filter(complaint => complaint['client'] === username),
+    users: Object.keys(data['users']).filter(user => data['users'][user]['type'] === 'client' && user !== username)
   };
 }

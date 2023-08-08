@@ -119,4 +119,46 @@ tr {
     text-align: center;
 }
 
+/* Styles for the modal background overlay */
+#modify-attendees-modal {
+    display: none; /* The modal is hidden by default */
+    position: fixed; /* Fix the position so it always stays in view even if user scrolls */
+    top: 0;
+    left: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    z-index: 999; /* Ensure the modal stays on top of everything */
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background overlay */
+    overflow-y: auto; /* Enable scroll if the modal content becomes too long */
+}
+
+/* Styles for the modal content */
+.modal-content {
+    position: relative;
+    background-color: #fff; /* White background for the content box */
+    margin: 15% auto; /* Center the modal vertically and horizontally */
+    padding: 20px;
+    border-radius: 5px; /* Round the corners */
+    width: 80%; /* Use 80% of the window's width, can adjust as desired */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a soft shadow for depth */
+    max-width: 600px; /* Limit the maximum width */
+}
+
+/* Style for close button, just as an example */
+#close-modal-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background-color: #f44336; /* Red color for the close button */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Make it round */
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#close-modal-btn:hover {
+    background-color: #da190b; /* Darken the color a bit when hovering */
+}
+
 
