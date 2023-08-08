@@ -9,7 +9,7 @@
     <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
     <nav>
         <ul>
-            <li><a href="/home">Home</a></li>
+            <li><a href="/client-home">Home</a></li>
             <li><a href="/create-meeting">Create Meeting</a></li>
             <li><a href="/file-complaint">File Complaint</a></li>
             <li><button type="button" id="logout">Logout</button></li>
@@ -45,9 +45,41 @@
 
     <form id="edit-payment-form" style="display: none;">
         <h2>Edit Payment Info</h2>
-        <!-- Insert fields for payment info here -->
+
+        <label for="payment-method">Payment Method:</label>
+        <select id="payment-method">
+            <option value="ach">ACH</option>
+            <option value="credit-card">Credit Card</option>
+        </select>
+
+        <div id="ach-details" style="display: none;">
+            <label for="account-number">Account Number:</label>
+            <input type="text" id="account-number" name="account-number">
+
+            <label for="routing-number">Routing Number:</label>
+            <input type="text" id="routing-number" name="routing-number">
+
+            <label for="full-name-ach">Full Name:</label>
+            <input type="text" id="full-name-ach" name="full-name-ach">
+        </div>
+
+        <div id="credit-card-details" style="display: none;">
+            <label for="full-name-cc">Name on Card:</label>
+            <input type="text" id="full-name-cc" name="full-name-cc">
+
+            <label for="card-number">Card Number:</label>
+            <input type="text" id="card-number" name="card-number">
+
+            <label for="security-code">Security Code:</label>
+            <input type="text" id="security-code" name="security-code" maxlength="4">
+
+            <label for="billing-zip">Billing Zip Code:</label>
+            <input type="text" id="billing-zip" name="billing-zip">
+        </div>
+
         <input type="submit" value="Save Changes">
     </form>
+
 </main>
 <script type="module" src="../client/client.js"></script>
 
