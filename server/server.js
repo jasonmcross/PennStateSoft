@@ -17,13 +17,13 @@ app.post('/login', (req, res) => handleLoginRequest(req, res));
 app.post('/register', (req, res) => handleRegisterRequest(req, res));
 app.post('/logout', (req, res) => res.clearCookie('session').json({ message: 'Logout successful' }));
 app.post('/payment-information', (req, res) => handleEditPaymentInformationRequest(req, res));
+app.post('/create-meeting', (req, res) => handlePostCreateMeetingRequest(req, res));
 
 app.post('/edit-profile', (req, res) => handleEditProfileRequest(req, res));
 app.get('/client-home', (req, res) => handleClientHomeRequest(req, res));
 app.get('/admin-home', (req, res) => handleAdminHomeRequest(req, res));
 app.get('/client-profile', (req, res) => handleClientProfileRequest(req, res));
 app.get('/create-meeting', (req, res) => handleCreateMeetingRequest(req, res));
-app.post('/create-meeting', (req, res) => handlePostCreateMeetingRequest(req, res));
 app.get('/file-complaint', (req, res) => handleFileComplaintRequest(req, res));
 app.get('/register', (req, res) => res.sendFile(path.join(__dirname, "../app/pages/registration.html")));
 
@@ -125,12 +125,14 @@ function handleCreateMeetingRequest(req, res) {
 function handlePostCreateMeetingRequest(req, res) {
   if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     let newData = data;
+    let username = newData['sessions'][req.cookies.sessionId]['username']
     let meetingData = req.body
+    meetingData['organizer'] = username;
     meetingData['id'] = uuidv4()
     newData['meetings'].push(meetingData);
     fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function(err) {});
-    res.statusCode = 201
-    res.json({ data: newData });
+    res.statusCode = 200
+    res.json({ userData: getDataForUser(username) });
   }
 };
 
@@ -191,7 +193,7 @@ function getDataForUser(username) {
     firstName: data['users'][username]['firstName'],
     lastName: data['users'][username]['lastName'],
     type: data['users'][username]['type'],
-    meetings: data['meetings'].filter(meeting => meeting['client'] === username),
+    meetings: data['meetings'].filter(meeting => meeting['organizer'] === username),
     attendee: data['meetings'].filter(meeting => meeting['attendees'].includes(username)),
     complaints: data['complaints'].filter(complaint => complaint['client'] === username),
   };
