@@ -16,6 +16,7 @@ app.get("/", (req, res) => res.sendFile(path.join(__dirname, "../app/pages/login
 app.post('/login', (req, res) => handleLoginRequest(req, res));
 app.post('/register', (req, res) => handleRegisterRequest(req, res));
 app.post('/logout', (req, res) => res.clearCookie('session').json({ message: 'Logout successful' }));
+app.post('/payment-information', (req, res) => handleEditPaymentInformationRequest(req, res));
 
 app.get('/client-home', (req, res) => handleClientHomeRequest(req, res));
 app.get('/admin-home', (req, res) => handleAdminHomeRequest(req, res));
@@ -64,7 +65,6 @@ function handleLoginRequest(req, res) {
 
 
 function handleRegisterRequest(req, res) {
-  console.log(req.body);
   let username = req.body.username;
   let hashedPassword = req.body.password;
   let firstName = req.body.firstName;
@@ -93,8 +93,6 @@ function handleRegisterRequest(req, res) {
 }
 
 function handleClientHomeRequest(req, res) {
-  console.log(req.cookies.sessionId);
-  console.log(data['sessions'][req.cookies.sessionId])
   if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     res.sendFile(path.join(__dirname, "../app/pages/client-home.html"));
   }
@@ -110,19 +108,19 @@ function handleAdminHomeRequest(req, res) {
 }
 
 function handleClientProfileRequest(req, res) {
-  if(req.cookies.session === '1') {
+  if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     res.sendFile(path.join(__dirname, "../app/pages/client-profile.html"));
   }
 }
 
 function handleCreateMeetingRequest(req, res) {
-  if(req.cookies.session === '1') {
+  if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     res.sendFile(path.join(__dirname, "../app/pages/create-meeting.html"));
   }
 }
 
 function handlePostCreateMeetingRequest(req, res) {
-  if(req.cookies.session === '1') {
+  if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     let newData = data;
     let meetingData = req.body
     meetingData['id'] = uuidv4()
@@ -140,8 +138,22 @@ app.get('/meeting/:id', function(req, res) {
 })
 
 function handleFileComplaintRequest(req, res) {
-  if(req.cookies.session === '1') {
+  if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     res.sendFile(path.join(__dirname, "../app/pages/file-complaint.html"));
+  }
+}
+
+function handleEditPaymentInformationRequest(req, res) {
+  if(checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
+    let user = data['sessions'][req.cookies.sessionId]['username'];
+    console.log(user);
+    let newData = data;
+    newData['users'][user]['paymentInformation'] = req.body;
+    console.log(req.body);
+    console.log(newData['users'][user]['paymentInformation']);
+    fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function(err) {});
+    res.statusCode = 201
+    res.json({ data: newData });
   }
 }
 

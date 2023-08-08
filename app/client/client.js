@@ -181,6 +181,86 @@ if (window.location.pathname === '/') {
   document.getElementById('login-form').addEventListener('submit', handleLogin);
 }
 
+if (window.location.pathname === '/client-profile') {
+  document.getElementById('edit-payment-btn').onclick = function() {
+    let form = document.getElementById('edit-payment-form');
+    let achForm = document.getElementById('ach-details');
+    if(form.style.display === 'block'){
+      form.style.display = 'none';
+      achForm.style.display = 'none';
+    }
+    else{
+      form.style.display = 'block';
+      achForm.style.display = 'block';
+    }
+  }
+  document.getElementById('payment-method').onchange = function() {
+    let achForm = document.getElementById('ach-details');
+    let ccForm = document.getElementById('credit-card-details');
+    if (document.getElementById('payment-method').value === 'ach') {
+      achForm.style.display = 'block';
+      ccForm.style.display = 'none';
+    }
+    else {
+      achForm.style.display = 'none';
+      ccForm.style.display = 'block';
+    }
+  }
+
+  document.getElementById('edit-payment-form').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    let paymentMethod = document.getElementById('payment-method').value;
+    if (paymentMethod === 'ach') {
+      await fetch('/payment-information', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          paymentMethod: paymentMethod,
+          routingNumber: document.getElementById('routing-number').value,
+          accountNumber: document.getElementById('account-number').value,
+          accountName: document.getElementById('full-name-ach').value,
+        })
+      }).then(response => {
+        if (response.status === 200) {
+          response.json().then(body => {
+            localStorage.setItem('paymentMethod', body.data.paymentMethod);
+            localStorage.setItem('routingNumber', body.data.routingNumber);
+            localStorage.setItem('full-name-ach', body.data.accountName);
+            localStorage.setItem('account-number', body.data.accountNumber);
+            window.location.href = '/client-profile';
+          })
+        }
+      });
+    } else {
+      await fetch('/payment-information', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          paymentMethod: paymentMethod,
+          cardNumber: document.getElementById('card-number').value,
+          cardName: document.getElementById('full-name-cc').value,
+          expirationDate: document.getElementById('billing-zip').value,
+          securityCode: document.getElementById('security-code').value,
+        })
+      }).then(response => {
+        if (response.status === 200) {
+          response.json().then(body => {
+            localStorage.setItem('paymentMethod', body.data.paymentMethod);
+            localStorage.setItem('cardNumber', body.data.cardNumber);
+            localStorage.setItem('billing-zip', body.data.expirationDate);
+            localStorage.setItem('securityCode', body.data.securityCode);
+            window.location.href = '/client-profile';
+          })
+        }
+      });
+    }
+  });
+}
+
 async function handleLogin(event) {
   event.preventDefault();
   console.log('here');
