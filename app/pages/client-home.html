@@ -31,9 +31,21 @@
                 <th>Meeting Room</th>
                 <th>Meeting Attendees</th>
                 <th>Meeting Type</th>
+                <th>Actions</th>
             </tr>
         </table>
     </section>
+
+    <div id="modify-attendees-modal" style="display:none;">
+        <div class="modal-content">
+            <h2>Modify Attendees</h2>
+            <ul id="attendees-list"></ul>
+            <input type="text" id="new-attendee" placeholder="Add new attendee" />
+            <button id="add-attendee-btn">Add</button>
+            <button id="close-modal-btn">Close</button>
+        </div>
+    </div>
+
 
     <section id="created-meetings">
         <h2>My Created Meetings</h2>

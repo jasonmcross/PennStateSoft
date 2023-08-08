@@ -403,13 +403,69 @@
       "attendees": "test",
       "type": "regular",
       "id": "d011741e-5086-4335-9bc7-e4507a5bf063"
+    },
+    {
+      "organizer": "t",
+      "meetingName": "test",
+      "meetingDate": "",
+      "meetingTime": "",
+      "meetingRoom": "1",
+      "attendees": "a",
+      "type": "regular",
+      "id": "13fa4887-334f-4a63-a934-9cd92ed007c7"
+    },
+    {
+      "organizer": "t",
+      "meetingName": "test",
+      "meetingDate": "",
+      "meetingTime": "",
+      "meetingRoom": "1",
+      "attendees": "SaberTothJoe",
+      "type": "regular",
+      "id": "0d8b2c8e-bcf8-487f-905e-20e644aa14e8"
+    },
+    {
+      "organizer": "t",
+      "meetingName": "test",
+      "meetingDate": "",
+      "meetingTime": "",
+      "meetingRoom": "1",
+      "attendees": "a",
+      "type": "regular",
+      "id": "fad2d6ec-c472-4d66-a094-4ef2010bb0db"
+    },
+    {
+      "organizer": "t",
+      "meetingName": "",
+      "meetingDate": "",
+      "meetingTime": "",
+      "meetingRoom": "1",
+      "attendees": "a",
+      "type": {
+        "0": {},
+        "1": {}
+      },
+      "id": "7df4d772-9650-4287-94da-dc9e9912db12"
+    },
+    {
+      "organizer": "t",
+      "meetingName": "test",
+      "meetingDate": "",
+      "meetingTime": "",
+      "meetingRoom": "1",
+      "attendees": [
+        "a",
+        "SaberTothJoe"
+      ],
+      "type": "regular",
+      "id": "ce13b602-1ee4-450c-bcf0-aa399f3c90b4"
     }
   ],
   "complaints": [],
   "sessions": {
-    "8dee60cd-1dd3-4f22-8d8c-364d13ce4415": {
+    "af67cd62-7cdb-4bdd-ab2c-1aa8a5d54c67": {
       "username": "t",
-      "expires": 1691465297579
+      "expires": 1691467001644
     }
   }
 }

@@ -34,14 +34,15 @@
 
         <label for="room">Room:</label>
         <select id="room" name="room">
-            <!-- Option values would ideally be fetched and populated dynamically from the database -->
             <option value="1">Room 1</option>
             <option value="2">Room 2</option>
-            <!-- Add more options as needed -->
         </select>
 
-        <label for="attendees">Add Attendees:</label>
-        <input type="text" id="attendees" name="attendees" placeholder="Enter attendee emails, separated by commas">
+        <label for="attendees-dropdown">Add Attendees:</label>
+        <select id="attendees-dropdown" name="attendees" multiple>
+            <!-- Options will be populated dynamically from localStorage -->
+        </select>
+
 
         <label>Room Type:</label>
         <input type="radio" id="regular" name="room-type" value="regular">

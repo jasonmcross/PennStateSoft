@@ -16,13 +16,21 @@ if (window.location.pathname === '/client-home') {
     let meetingRoom = row.insertCell(3);
     let attendees = row.insertCell(4);
     let type = row.insertCell(5);
+    let actions = row.insertCell(6);
     meetingName.innerHTML = meeting.meetingName;
     meetingDate.innerHTML = meeting.meetingDate;
     meetingTime.innerHTML = meeting.meetingTime;
     meetingRoom.innerHTML = meeting.meetingRoom;
     attendees.innerHTML = meeting.attendees;
     type.innerHTML = meeting.type;
+    actions.innerHTML = '<button class="modify-attendees-btn">Modify Attendees</button>';
+    actions.querySelector('.modify-attendees-btn').addEventListener('click', function() {
+      openModal(meeting.attendees);
+    });
   }
+
+
+
 }
 
 let url_arr = window.location.href.split("/")
@@ -55,6 +63,7 @@ if (url_arr[url_arr.length-2] === "meeting") {
 if (window.location.pathname === '/create-meeting') {
   document.getElementById('logout').addEventListener('click', handleLogout);
   document.getElementById('create-meeting-form').addEventListener('submit', handleCreateMeeting);
+  document.addEventListener('DOMContentLoaded', populateAttendeesDropdown);
 }
 
 if (window.location.pathname === '/file-complaint') {
@@ -198,6 +207,8 @@ async function handleCreateMeeting(event) {
       break;
     }
   }
+  // console log the values selected in the multi select attendees dropdown
+
   await fetch('/create-meeting', {
     method: 'POST',
     headers: {
@@ -209,7 +220,9 @@ async function handleCreateMeeting(event) {
       meetingDate: document.getElementById('date').value,
       meetingTime: document.getElementById('time').value,
       meetingRoom: document.getElementById('room').value,
-      attendees: document.getElementById('attendees').value,
+      attendees: Array.from(document.getElementById('attendees-dropdown').options)  // Convert HTMLCollection to Array
+          .filter(option => option.selected)   // Filter only the selected options
+          .map(option => option.value),
       type: type,
     })
   }).then(response => {
@@ -302,4 +315,43 @@ async function handleEditProfile(event) {
       })
     }
   })
+}
+
+function openModal(attendees) {
+  let modal = document.getElementById('modify-attendees-modal');
+  let attendeesList = document.getElementById('attendees-list');
+
+  // Clear previous attendees
+  attendeesList.innerHTML = '';
+
+  // Populate the modal with attendees
+
+
+  // Show the modal
+  modal.style.display = 'block';
+
+  // Close modal functionality
+  document.getElementById('close-modal-btn').addEventListener('click', function() {
+    modal.style.display = 'none';
+  });
+}
+
+function populateAttendeesDropdown() {
+  console.log('here');
+  const attendeesDropdown = document.getElementById('attendees-dropdown');
+
+  // Get user data from localStorage
+  const userData = JSON.parse(localStorage.getItem('userData'));
+  console.log(userData);
+  if (userData && userData['users']) {
+    const users = userData['users'];
+
+    // Add an option for each user
+    users.forEach(user => {
+      const option = document.createElement('option');
+      option.value = user; // assuming each user has an email attribute
+      option.textContent = user; // show name if available, otherwise show email
+      attendeesDropdown.appendChild(option);
+    });
+  }
 }
