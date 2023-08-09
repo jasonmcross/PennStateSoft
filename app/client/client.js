@@ -141,6 +141,11 @@ if (window.location.pathname === '/client-profile') {
   })
 }
 
+if (window.location.pathname === '/edit-rooms') {
+  generateRoomTable()
+  document.getElementById('room-form').addEventListener('submit', handleCreateRoom)
+}
+
 async function handleLogin (event) {
   event.preventDefault()
   console.log('here')
@@ -436,6 +441,66 @@ async function handleFileComplaint () {
         localStorage.setItem('userData', JSON.stringify(data.userData))
       })
       window.location.href = '/file-complaint'
+    }
+  })
+}
+
+function generateRoomTable() {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const rooms = userData.rooms
+  for (let i = 0; i < rooms.length; i++) {
+    const room = rooms[i]
+    const table = document.getElementById('room-table')
+    const row = table.insertRow()
+    const name = row.insertCell(0)
+    const type = row.insertCell(1)
+    const actions = row.insertCell(2)
+    name.innerHTML = room.name
+    type.innerHTML = room.type
+    actions.innerHTML = '<button class="remove-room-btn">Remove Room</button>'
+    actions.querySelector('.remove-room-btn').addEventListener('click', function () {
+      handleRemoveRoom(room.name)
+    })
+  }
+}
+
+async function handleCreateRoom (event) {
+  event.preventDefault()
+  const form = document.getElementById('room-form')
+  await fetch('/create-room', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: form.elements[0].value,
+      type: form.elements[1].value
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/edit-rooms'
+    }
+  })
+}
+
+async function handleRemoveRoom (name) {
+  await fetch('/remove-room', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: name
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/edit-rooms'
     }
   })
 }
