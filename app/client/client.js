@@ -41,6 +41,8 @@ if (window.location.pathname === '/create-meeting') {
 
 if (window.location.pathname === '/file-complaint') {
   document.getElementById('logout').addEventListener('click', handleLogout)
+  document.getElementById('complaint-form').addEventListener('submit', handleFileComplaint)
+  generateComplaintTable()
 }
 
 if (window.location.pathname === '/') {
@@ -48,6 +50,8 @@ if (window.location.pathname === '/') {
 }
 
 if (window.location.pathname === '/client-profile') {
+  generatePaymentInformationTableHeaders()
+  generatePaymentInformationTable()
   document.getElementById('logout').addEventListener('click', handleLogout)
   const userData = JSON.parse(localStorage.getItem('userData'))
   document.getElementById('firstName').innerHTML = userData.firstName
@@ -106,7 +110,8 @@ if (window.location.pathname === '/client-profile') {
         })
       }).then(response => {
         if (response.status === 200) {
-          response.json().then(() => {
+          response.json().then(data => {
+            localStorage.setItem('userData', JSON.stringify(data.userData))
             window.location.href = '/client-profile'
           })
         }
@@ -126,7 +131,8 @@ if (window.location.pathname === '/client-profile') {
         })
       }).then(response => {
         if (response.status === 200) {
-          response.json().then(() => {
+          response.json().then(data => {
+            localStorage.setItem('userData', JSON.stringify(data.userData))
             window.location.href = '/client-profile'
           })
         }
@@ -336,4 +342,100 @@ function generateMeetingTable () {
       openModal(meeting.attendees)
     })
   }
+}
+
+function generateComplaintTable () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const complaints = userData.complaints
+  for (let i = 0; i < complaints.length; i++) {
+    const complaint = complaints[i]
+    const table = document.getElementById('complaint-table')
+    const row = table.insertRow()
+    const subject = row.insertCell(0)
+    const message = row.insertCell(1)
+    const status = row.insertCell(2)
+    subject.innerHTML = complaint.subject
+    message.innerHTML = complaint.message
+    status.innerHTML = complaint.status
+  }
+}
+
+function generatePaymentInformationTableHeaders () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const paymentInformation = userData.paymentInformation
+  const table = document.getElementById('payment-information-table')
+  if (paymentInformation.paymentMethod === 'credit-card') {
+    const row = table.insertRow()
+    const paymentMethod = row.insertCell(0)
+    const cardName = row.insertCell(1)
+    const cardNumber = row.insertCell(2)
+    const expirationDate = row.insertCell(3)
+    const securityCode = row.insertCell(4)
+    paymentMethod.innerHTML = 'Payment Method'
+    cardName.innerHTML = 'Card Name'
+    cardNumber.innerHTML = 'Card Number'
+    expirationDate.innerHTML = 'Expiration Date'
+    securityCode.innerHTML = 'Security Code'
+  } else {
+    const row = table.insertRow()
+    const paymentMethod = row.insertCell(0)
+    const accountNumber = row.insertCell(1)
+    const routingNumber = row.insertCell(2)
+    const accountName = row.insertCell(3)
+    paymentMethod.innerHTML = 'Payment Method'
+    accountNumber.innerHTML = 'Account Number'
+    routingNumber.innerHTML = 'Routing Number'
+    accountName.innerHTML = 'Account Name'
+  }
+}
+
+function generatePaymentInformationTable () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const paymentInformation = userData.paymentInformation
+  const table = document.getElementById('payment-information-table')
+  const row = table.insertRow()
+  if (paymentInformation.paymentMethod === 'credit-card') {
+    const paymentMethod = row.insertCell(0)
+    const cardName = row.insertCell(1)
+    const cardNumber = row.insertCell(2)
+    const expirationDate = row.insertCell(3)
+    const securityCode = row.insertCell(4)
+    cardName.innerHTML = paymentInformation.cardName
+    cardNumber.innerHTML = paymentInformation.cardNumber
+    expirationDate.innerHTML = paymentInformation.expirationDate
+    paymentMethod.innerHTML = paymentInformation.paymentMethod === 'credit-card' ? 'Credit Card' : 'ACH'
+    securityCode.innerHTML = paymentInformation.securityCode
+  } else if (paymentInformation.paymentMethod === 'ach') {
+    const paymentMethod = row.insertCell(0)
+    const accountNumber = row.insertCell(1)
+    const routingNumber = row.insertCell(2)
+    const accountName = row.insertCell(3)
+    paymentMethod.innerHTML = paymentInformation.paymentMethod === 'credit-card' ? 'Credit Card' : 'ACH'
+    accountNumber.innerHTML = paymentInformation.accountNumber
+    routingNumber.innerHTML = paymentInformation.routingNumber
+    accountName.innerHTML = paymentInformation.accountName
+  }
+}
+
+async function handleFileComplaint () {
+  event.preventDefault()
+  const form = document.getElementById('complaint-form')
+  await fetch('/file-complaint', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      subject: form.elements[0].value,
+      message: form.elements[1].value,
+      status: 'pending'
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/file-complaint'
+    }
+  })
 }

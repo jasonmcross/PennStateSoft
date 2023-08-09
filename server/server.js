@@ -18,6 +18,7 @@ app.post('/register', (req, res) => handleRegisterRequest(req, res))
 app.post('/logout', (req, res) => res.clearCookie('session').json({ message: 'Logout successful' }))
 app.post('/payment-information', (req, res) => handleEditPaymentInformationRequest(req, res))
 app.post('/create-meeting', (req, res) => handlePostCreateMeetingRequest(req, res))
+app.post('/file-complaint', (req, res) => handlePostFileComplaintRequest(req, res))
 
 app.post('/edit-profile', (req, res) => handleEditProfileRequest(req, res))
 app.get('/client-home', (req, res) => handleClientHomeRequest(req, res))
@@ -168,8 +169,8 @@ function handleEditPaymentInformationRequest (req, res) {
         return res.status(500).json({ message: 'Error updating session information' })
       }
     })
-    res.statusCode = 201
-    res.json({ data: newData })
+    res.statusCode = 200
+    res.json({ userData: getDataForUser(user) })
   }
 }
 
@@ -207,12 +208,31 @@ function getDataForUser (username) {
   return {
     firstName: data.users[username].firstName,
     lastName: data.users[username].lastName,
+    paymentInformation: obscurePaymentInformation(username),
     type: data.users[username].type,
     meetings: data.meetings.filter(meeting => meeting.organizer === username),
     attendee: data.meetings.filter(meeting => meeting.attendees.includes(username)),
-    complaints: data.complaints.filter(complaint => complaint.client === username),
+    complaints: data.complaints.filter(complaint => complaint.user === username),
     users: Object.keys(data.users).filter(user => data.users[user].type === 'client' && user !== username)
   }
+}
+
+function obscurePaymentInformation (username) {
+  const paymentInformation = data.users[username].paymentInformation
+  const obscuredResult = {}
+  if (paymentInformation.paymentMethod === 'credit-card') {
+    obscuredResult.paymentMethod = 'credit-card'
+    obscuredResult.cardName = paymentInformation.cardName
+    obscuredResult.cardNumber = '**** **** **** ' + paymentInformation.cardNumber.slice(-4)
+    obscuredResult.expirationDate = paymentInformation.expirationDate
+    obscuredResult.securityCode = '***'
+  } else if (paymentInformation.paymentMethod === 'ach') {
+    obscuredResult.paymentMethod = 'ach'
+    obscuredResult.accountName = paymentInformation.accountName
+    obscuredResult.routingNumber = '****' + paymentInformation.routingNumber.slice(-4)
+    obscuredResult.accountNumber = '****' + paymentInformation.accountNumber.slice(-4)
+  }
+  return obscuredResult
 }
 
 function checkIfRoomIsAvailable (room, time, date) {
@@ -223,4 +243,22 @@ function checkIfRoomIsAvailable (room, time, date) {
     }
   }
   return true
+}
+
+function handlePostFileComplaintRequest (req, res) {
+  if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
+    const newData = data
+    const username = newData.sessions[req.cookies.sessionId].username
+    const complaintData = req.body
+    complaintData.user = username
+    complaintData.id = uuidv4()
+    newData.complaints.push(complaintData)
+    fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
+      if (err) {
+        return res.status(500).json({ message: 'Error updating session information' })
+      }
+    })
+    res.statusCode = 200
+    res.json({ userData: getDataForUser(username) })
+  }
 }
