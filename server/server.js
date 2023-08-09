@@ -12,14 +12,14 @@ app.use(express.static(path.join(__dirname, '../app')))
 app.use(express.static(path.join(__dirname, '../database')))
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../app/pages/login.html')))
-
 app.post('/login', (req, res) => handleLoginRequest(req, res))
 app.post('/register', (req, res) => handleRegisterRequest(req, res))
 app.post('/logout', (req, res) => res.clearCookie('session').json({ message: 'Logout successful' }))
 app.post('/payment-information', (req, res) => handleEditPaymentInformationRequest(req, res))
 app.post('/create-meeting', (req, res) => handlePostCreateMeetingRequest(req, res))
+app.post('/remove-room', (req, res) => handlePostRemoveRoomRequest(req, res))
 app.post('/file-complaint', (req, res) => handlePostFileComplaintRequest(req, res))
-
+app.post('/create-room', (req, res) => handlePostRoomRequest(req, res))
 app.post('/edit-profile', (req, res) => handleEditProfileRequest(req, res))
 app.get('/client-home', (req, res) => handleClientHomeRequest(req, res))
 app.get('/admin-home', (req, res) => handleAdminHomeRequest(req, res))
@@ -27,7 +27,7 @@ app.get('/client-profile', (req, res) => handleClientProfileRequest(req, res))
 app.get('/create-meeting', (req, res) => handleCreateMeetingRequest(req, res))
 app.get('/file-complaint', (req, res) => handleFileComplaintRequest(req, res))
 app.get('/register', (req, res) => res.sendFile(path.join(__dirname, '../app/pages/registration.html')))
-
+app.get('/edit-rooms', (req, res) => handleEditRoomsRequest(req, res))
 app.listen(3000, () => console.log('Server is Running'))
 
 function handleLoginRequest (req, res) {
@@ -210,6 +210,7 @@ function getDataForUser (username) {
     lastName: data.users[username].lastName,
     paymentInformation: obscurePaymentInformation(username),
     type: data.users[username].type,
+    rooms: data.rooms,
     meetings: data.meetings.filter(meeting => meeting.organizer === username),
     attendee: data.meetings.filter(meeting => meeting.attendees.includes(username)),
     complaints: data.complaints.filter(complaint => complaint.user === username),
@@ -260,5 +261,42 @@ function handlePostFileComplaintRequest (req, res) {
     })
     res.statusCode = 200
     res.json({ userData: getDataForUser(username) })
+  }
+}
+
+function handleEditRoomsRequest (req, res) {
+  if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
+    res.sendFile(path.join(__dirname, '../app/pages/edit-rooms.html'))
+  }
+}
+
+function handlePostRoomRequest (req, res) {
+  if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
+    const newData = data
+    const roomData = req.body
+    roomData.id = uuidv4()
+    newData.rooms.push(roomData)
+    fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
+      if (err) {
+        return res.status(500).json({ message: 'Error updating session information' })
+      }
+    })
+    res.statusCode = 200
+    res.json({ userData: getDataForUser(newData.sessions[req.cookies.sessionId].username) })
+  }
+}
+
+function handlePostRemoveRoomRequest (req, res) {
+  if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
+    const newData = data
+    const roomName = req.body.name
+    newData.rooms = newData.rooms.filter(room => room.name !== roomName)
+    fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
+      if (err) {
+        return res.status(500).json({ message: 'Error updating session information' })
+      }
+    })
+    res.statusCode = 200
+    res.json({ userData: getDataForUser(newData.sessions[req.cookies.sessionId].username) })
   }
 }

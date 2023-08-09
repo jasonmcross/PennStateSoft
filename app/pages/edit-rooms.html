@@ -1,0 +1,47 @@
+<html>
+<head>
+    <title>Edit Rooms - PennStateSoft MSS</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
+</head>
+<body>
+<header>
+    <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
+    <nav>
+        <ul>
+            <li><a href="/client-profile">Profile</a></li>
+            <li><a href="/edit-rooms">Edit Rooms</a></li>
+            <li><a href="/update-billing">Update Billing</a></li>
+            <li><a href="/create-meeting">Create Meeting</a></li>
+            <li><a href="/view-meetings">View Meetings</a></li>
+            <li><a href="/view-complaints">Complaints</a></li>
+            <li><a href="/registration">Create Admin Account</a></li>
+            <li><button type="button" id="logout">Logout</button></li>
+        </ul>
+    </nav>
+</header>
+<main>
+    <h1>Edit Rooms</h1>
+    <table id="room-table">
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+    <form id="room-form">
+        <label for="room">Name:</label>
+        <input type="text" id="room" name="room">
+        <label for="type">Type:</label>
+        <select id="type" name="type">
+            <option value="Regular">Regular</option>
+            <option value="Special">Special</option>
+        </select>
+        <input type="submit" value="Create Room">
+    </form>
+</main>
+<script type="module" src="../client/client.js"></script>
+<footer>
+    <!-- footer details can be inserted here -->
+</footer>
+</body>
+</html>
