@@ -161,4 +161,41 @@ tr {
     background-color: #da190b; /* Darken the color a bit when hovering */
 }
 
+/* Base styling for all rows */
+#week-table tr {
+    background-color: #ffffff;  /* white as default background */
+}
+
+/* Styling for every other row, starting from the second one */
+#week-table tr:nth-child(even) {
+    background-color: #f2f2f2;  /* light gray for highlighting */
+}
+
+/* Styling for all table cells */
+#week-table td {
+    border: 1px solid #dcdcdc; /* adds a light gray border */
+    padding: 8px; /* some padding for content inside cells */
+    vertical-align: top; /* aligns content to the top of the cell */
+    text-align: left; /* aligns cell content to the left */
+}
+
+/* Base styling for all rows */
+#day-table tr {
+    background-color: #ffffff;  /* white as default background */
+}
+
+/* Styling for every other row, starting from the second one */
+#day-table tr:nth-child(even) {
+    background-color: #f2f2f2;  /* light gray for highlighting */
+}
+
+/* Styling for all table cells */
+#day-table td {
+    border: 1px solid #dcdcdc; /* adds a light gray border */
+    padding: 8px; /* some padding for content inside cells */
+    vertical-align: top; /* aligns content to the top of the cell */
+    text-align: left; /* aligns cell content to the left */
+}
+
+
 
