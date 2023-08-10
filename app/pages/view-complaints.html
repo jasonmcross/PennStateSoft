@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>View Complaints - PennStateSoft MSS</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
+</head>
+<body>
+<header>
+    <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
+    <nav>
+        <ul>
+            <li><a href="/admin-home">Home</a></li>
+            <li><a href="/edit-rooms">Edit Rooms</a></li>
+            <li><a href="/update-billing">Update Billing</a></li>
+            <li><a href="/registration">Create Admin Account</a></li>
+            <li><button type="button" id="logout">Logout</button></li>
+        </ul>
+    </nav>
+</header>
+<main>
+    <!-- Show the current complaints -->
+    <h1>Current Complaints</h1>
+    <table id="complaint-table">
+        <tr>
+            <th>Subject</th>
+            <th>Complaint</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+
+    <div id="respond-to-complaint-modal" style="display:none;">
+        <div class="modal-content">
+            <h2>Respond to Complaint</h2>
+            <div style="display:block;">
+                <h3 id="complaint-subject"></h3>
+                <p id="complaint-message"></p>
+                <p id="id"></p>
+            </div>
+            <form id="respond-to-complaint-form">
+                <label for="response">Response:</label>
+                <textarea id="response" name="response"></textarea>
+                <input type="submit" value="Submit Response">
+            </form>
+            <button id="close-modal-btn">Close</button>
+
+        </div>
+    </div>
+</main>
+<script type="module" src="../client/client.js"></script>
+<footer>
+    <!-- footer details can be inserted here -->
+</footer>
+</body>
+</html>

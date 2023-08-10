@@ -85,6 +85,22 @@ if (window.location.pathname === '/create-meeting') {
 
 if (window.location.pathname === '/file-complaint') {
   document.getElementById('logout').addEventListener('click', handleLogout)
+  document.getElementById('complaint-form').addEventListener('submit', handleFileComplaint)
+  generateComplaintTable()
+}
+
+if (window.location.pathname === '/view-complaints') {
+  document.getElementById('respond-to-complaint-form').addEventListener('submit', handleRespondToComplaint)
+  generateComplaintsTable()
+}
+
+if (window.location.pathname === '/admin-view-meetings') {
+  document.getElementById('room').onchange = handleRoomSwitcherChange
+  document.getElementById('day-or-week').onchange = handleDayOrWeek
+
+  addRoomsToSwitcher()
+  generateMeetingTableDayView()
+  generateMeetingTableWeekView()
 }
 
 if (window.location.pathname === '/') {
@@ -92,6 +108,8 @@ if (window.location.pathname === '/') {
 }
 
 if (window.location.pathname === '/client-profile') {
+  generatePaymentInformationTableHeaders()
+  generatePaymentInformationTable()
   document.getElementById('logout').addEventListener('click', handleLogout)
   const userData = JSON.parse(localStorage.getItem('userData'))
   document.getElementById('firstName').innerHTML = userData.firstName
@@ -150,7 +168,8 @@ if (window.location.pathname === '/client-profile') {
         })
       }).then(response => {
         if (response.status === 200) {
-          response.json().then(() => {
+          response.json().then(data => {
+            localStorage.setItem('userData', JSON.stringify(data.userData))
             window.location.href = '/client-profile'
           })
         }
@@ -170,7 +189,8 @@ if (window.location.pathname === '/client-profile') {
         })
       }).then(response => {
         if (response.status === 200) {
-          response.json().then(() => {
+          response.json().then(data => {
+            localStorage.setItem('userData', JSON.stringify(data.userData))
             window.location.href = '/client-profile'
           })
         }
@@ -227,7 +247,7 @@ document.getElementById('add-attendee-btn').addEventListener('click', async func
     // Clear the input and meetingID fields.
     newAttendeesInput.value = ""
     document.getElementById('hiddenMeetingIdField').value
-    
+
     // Hide the modal div.
     modal.style.display = 'none'
     // Refresh the general meeting list.
@@ -235,10 +255,13 @@ document.getElementById('add-attendee-btn').addEventListener('click', async func
 })
 
 
+if (window.location.pathname === '/edit-rooms') {
+  generateRoomTable()
+  document.getElementById('room-form').addEventListener('submit', handleCreateRoom)
+}
 
 async function handleLogin (event) {
   event.preventDefault()
-  console.log('here')
 
   const username = document.getElementById('username').value
   const password = document.getElementById('password').value
@@ -444,12 +467,10 @@ async function openModal (idx, meetingId, meetingAttendees) {
 }
 
 function populateAttendeesDropdown () {
-  console.log('here')
   const attendeesDropdown = document.getElementById('attendees-dropdown')
 
   // Get user data from localStorage
   const userData = JSON.parse(localStorage.getItem('userData'))
-  console.log(userData)
   if (userData && userData.users) {
     const users = userData.users
 
@@ -495,5 +516,354 @@ async function generateMeetingTable () {
     actions.querySelector('.modify-attendees-btn').addEventListener('click', function () {
       openModal(i, meeting.id,meeting.attendees)
     })
+  }
+}
+
+function generateComplaintTable () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const complaints = userData.complaints
+  for (let i = 0; i < complaints.length; i++) {
+    const complaint = complaints[i]
+    const table = document.getElementById('complaint-table')
+    const row = table.insertRow()
+    const subject = row.insertCell(0)
+    const message = row.insertCell(1)
+    const status = row.insertCell(2)
+    const response = row.insertCell(3)
+    subject.innerHTML = complaint.subject
+    message.innerHTML = complaint.message
+    status.innerHTML = complaint.status
+    response.innerHTML = complaint.response ? complaint.response : ''
+  }
+}
+
+function generatePaymentInformationTableHeaders () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const paymentInformation = userData.paymentInformation
+  const table = document.getElementById('payment-information-table')
+  if (paymentInformation.paymentMethod === 'credit-card') {
+    const row = table.insertRow()
+    const paymentMethod = row.insertCell(0)
+    const cardName = row.insertCell(1)
+    const cardNumber = row.insertCell(2)
+    const expirationDate = row.insertCell(3)
+    const securityCode = row.insertCell(4)
+    paymentMethod.innerHTML = 'Payment Method'
+    cardName.innerHTML = 'Card Name'
+    cardNumber.innerHTML = 'Card Number'
+    expirationDate.innerHTML = 'Expiration Date'
+    securityCode.innerHTML = 'Security Code'
+  } else {
+    const row = table.insertRow()
+    const paymentMethod = row.insertCell(0)
+    const accountNumber = row.insertCell(1)
+    const routingNumber = row.insertCell(2)
+    const accountName = row.insertCell(3)
+    paymentMethod.innerHTML = 'Payment Method'
+    accountNumber.innerHTML = 'Account Number'
+    routingNumber.innerHTML = 'Routing Number'
+    accountName.innerHTML = 'Account Name'
+  }
+}
+
+function generatePaymentInformationTable () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const paymentInformation = userData.paymentInformation
+  const table = document.getElementById('payment-information-table')
+  const row = table.insertRow()
+  if (paymentInformation.paymentMethod === 'credit-card') {
+    const paymentMethod = row.insertCell(0)
+    const cardName = row.insertCell(1)
+    const cardNumber = row.insertCell(2)
+    const expirationDate = row.insertCell(3)
+    const securityCode = row.insertCell(4)
+    cardName.innerHTML = paymentInformation.cardName
+    cardNumber.innerHTML = paymentInformation.cardNumber
+    expirationDate.innerHTML = paymentInformation.expirationDate
+    paymentMethod.innerHTML = paymentInformation.paymentMethod === 'credit-card' ? 'Credit Card' : 'ACH'
+    securityCode.innerHTML = paymentInformation.securityCode
+  } else if (paymentInformation.paymentMethod === 'ach') {
+    const paymentMethod = row.insertCell(0)
+    const accountNumber = row.insertCell(1)
+    const routingNumber = row.insertCell(2)
+    const accountName = row.insertCell(3)
+    paymentMethod.innerHTML = paymentInformation.paymentMethod === 'credit-card' ? 'Credit Card' : 'ACH'
+    accountNumber.innerHTML = paymentInformation.accountNumber
+    routingNumber.innerHTML = paymentInformation.routingNumber
+    accountName.innerHTML = paymentInformation.accountName
+  }
+}
+
+async function handleFileComplaint () {
+  event.preventDefault()
+  const form = document.getElementById('complaint-form')
+  await fetch('/file-complaint', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      subject: form.elements[0].value,
+      message: form.elements[1].value,
+      status: 'pending'
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/file-complaint'
+    }
+  })
+}
+
+function generateRoomTable () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const rooms = userData.rooms
+  for (let i = 0; i < rooms.length; i++) {
+    const room = rooms[i]
+    const table = document.getElementById('room-table')
+    const row = table.insertRow()
+    const name = row.insertCell(0)
+    const type = row.insertCell(1)
+    const actions = row.insertCell(2)
+    name.innerHTML = room.name
+    type.innerHTML = room.type
+    actions.innerHTML = '<button class="remove-room-btn">Remove Room</button>'
+    actions.querySelector('.remove-room-btn').addEventListener('click', function () {
+      handleRemoveRoom(room.name)
+    })
+  }
+}
+
+async function handleCreateRoom (event) {
+  event.preventDefault()
+  const form = document.getElementById('room-form')
+  await fetch('/create-room', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: form.elements[0].value,
+      type: form.elements[1].value
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/edit-rooms'
+    }
+  })
+}
+
+async function handleRemoveRoom (name) {
+  await fetch('/remove-room', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: name
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/edit-rooms'
+    }
+  })
+}
+
+function generateComplaintsTable () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const complaints = userData.complaints
+  for (let i = 0; i < complaints.length; i++) {
+    const complaint = complaints[i]
+    const table = document.getElementById('complaint-table')
+    const row = table.insertRow()
+    const subject = row.insertCell(0)
+    const message = row.insertCell(1)
+    const status = row.insertCell(2)
+    const actions = row.insertCell(3)
+    subject.innerHTML = complaint.subject
+    message.innerHTML = complaint.message
+    status.innerHTML = complaint.status
+    actions.innerHTML = complaint.status === 'pending' ? '<button class="respond-to-complaint-btn">Respond to Complaint</button>' : ''
+    if (complaint.status === 'pending') {
+      actions.querySelector('.respond-to-complaint-btn').addEventListener('click', function () {
+        openRespondToComplaintModal(complaint.id, complaint.subject, complaint.message)
+      })
+    }
+  }
+}
+
+function openRespondToComplaintModal (id, subject, message) {
+  const modal = document.getElementById('respond-to-complaint-modal')
+  modal.style.display = 'block'
+  const complaintId = document.getElementById('id')
+  complaintId.value = id
+  complaintId.style.display = 'none'
+  const complaintSubject = document.getElementById('complaint-subject')
+  complaintSubject.innerHTML = 'Subject: ' + subject
+  const complaintMessage = document.getElementById('complaint-message')
+  complaintMessage.innerHTML = 'Message: ' + message
+  document.getElementById('close-modal-btn').addEventListener('click', function () {
+    modal.style.display = 'none'
+  })
+}
+
+function handleRespondToComplaint (event) {
+  const form = document.getElementById('respond-to-complaint-form')
+  const complaintId = document.getElementById('id')
+  fetch('/respond-to-complaint', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      id: complaintId.value,
+      response: form.elements[0].value
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/view-complaints'
+    }
+  })
+}
+
+function addRoomsToSwitcher () {
+  const roomSelect = document.getElementById('room')
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const rooms = userData.rooms
+  for (let i = 0; i < rooms.length; i++) {
+    const room = rooms[i]
+    const option = document.createElement('option')
+    option.value = room.name
+    option.text = room.name
+    option.innerHTML = room.name
+    roomSelect.add(option)
+  }
+}
+
+function generateMeetingTableDayView () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  let meetings = userData.meetings
+  const table = document.getElementById('day-table')
+  const roomFilter = document.getElementById('room')
+  if (roomFilter.value !== 'all') {
+    meetings = meetings.filter(meeting => meeting.meetingRoom === roomFilter.value)
+  }
+  for (let i = 0; i < meetings.length; i++) {
+    const meeting = meetings[i]
+    // If meeting is today, add to table. Replace / with - and format is YYYY-MM-DD for today's date
+    if (meeting.meetingDate === new Date().toISOString().slice(0, 10).replace(/-/g, '-')) {
+      const row = table.insertRow()
+      const time = row.insertCell(0)
+      const room = row.insertCell(1)
+      const organizer = row.insertCell(2)
+      const attendees = row.insertCell(3)
+      const actions = row.insertCell(4)
+      time.innerHTML = meeting.meetingTime
+      room.innerHTML = meeting.meetingRoom
+      organizer.innerHTML = meeting.organizer
+      attendees.innerHTML = meeting.attendees
+      actions.innerHTML = '<button class="remove-meeting-btn">Remove Meeting</button>'
+      actions.querySelector('.remove-meeting-btn').addEventListener('click', function () {
+        handleRemoveMeeting(meeting.id)
+      })
+    }
+  }
+}
+
+function handleRoomSwitcherChange () {
+  // Clear all non header rows
+  const dayTable = document.getElementById('day-table')
+  for (let i = dayTable.rows.length - 1; i > 0; i--) {
+    dayTable.deleteRow(i)
+  }
+  const weekTable = document.getElementById('week-table')
+  for (let i = weekTable.rows.length - 1; i > 0; i--) {
+    weekTable.deleteRow(i)
+  }
+  generateMeetingTableDayView()
+  generateMeetingTableWeekView()
+}
+
+function handleDayOrWeek () {
+  const dayOrWeek = document.getElementById('day-or-week')
+  if (dayOrWeek.value === 'day') {
+    document.getElementById('day-table').style.display = 'block'
+    document.getElementById('week-table').style.display = 'none'
+  } else {
+    document.getElementById('day-table').style.display = 'none'
+    document.getElementById('week-table').style.display = 'block'
+  }
+}
+
+function handleRemoveMeeting (id) {
+  fetch('/remove-meeting', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      id
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/admin-view-meetings'
+    }
+  })
+}
+
+function generateMeetingTableWeekView () {
+  const table = document.getElementById('week-table')
+  const roomFilter = document.getElementById('room')
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  let meetings = userData.meetings
+
+  // Filter the meetings based on the room selection
+  if (roomFilter.value !== 'all') {
+    meetings = meetings.filter(meeting => meeting.meetingRoom === roomFilter.value)
+  }
+
+  // Generate rows for each hour, as done previously
+  for (let i = 9; i <= 17; i++) {
+    const row = table.insertRow()
+    row.insertCell(0).innerHTML = i + ':00'
+    for (let j = 1; j <= 5; j++) {
+      row.insertCell(j).innerHTML = '<div class="week-day-cell"></div>'
+    }
+  }
+
+  // Populate the table with filtered meetings for the week
+  for (let i = 0; i < meetings.length; i++) {
+    const meeting = meetings[i]
+    const meetingDate = new Date(meeting.meetingDate)
+    const meetingDay = meetingDate.getDay()
+    if (meetingDay < 1 || meetingDay > 5) continue
+
+    const meetingTime = meeting.meetingTime.split(':')
+    const meetingHour = parseInt(meetingTime[0], 10)
+    if (meetingHour < 9 || meetingHour > 17) continue
+
+    const meetingRow = table.rows[meetingHour - 9]
+    const meetingCell = meetingRow.cells[meetingDay]
+    const meetingInfo = 'Room: ' + meeting.meetingRoom + ' | Organizer: ' + meeting.organizer + ' | Attendees: ' + meeting.attendees
+
+    if (meetingCell.innerHTML.includes('week-day-cell')) {
+      meetingCell.innerHTML = meetingInfo
+    } else {
+      meetingCell.innerHTML += '<br>' + meetingInfo
+    }
   }
 }
