@@ -45,6 +45,11 @@ if (window.location.pathname === '/file-complaint') {
   generateComplaintTable()
 }
 
+if (window.location.pathname === '/view-complaints') {
+  document.getElementById('respond-to-complaint-form').addEventListener('submit', handleRespondToComplaint)
+  generateComplaintsTable()
+}
+
 if (window.location.pathname === '/') {
   document.getElementById('login-form').addEventListener('submit', handleLogin)
 }
@@ -359,9 +364,11 @@ function generateComplaintTable () {
     const subject = row.insertCell(0)
     const message = row.insertCell(1)
     const status = row.insertCell(2)
+    const response = row.insertCell(3)
     subject.innerHTML = complaint.subject
     message.innerHTML = complaint.message
     status.innerHTML = complaint.status
+    response.innerHTML = complaint.response ? complaint.response : ''
   }
 }
 
@@ -445,7 +452,7 @@ async function handleFileComplaint () {
   })
 }
 
-function generateRoomTable() {
+function generateRoomTable () {
   const userData = JSON.parse(localStorage.getItem('userData'))
   const rooms = userData.rooms
   for (let i = 0; i < rooms.length; i++) {
@@ -501,6 +508,67 @@ async function handleRemoveRoom (name) {
         localStorage.setItem('userData', JSON.stringify(data.userData))
       })
       window.location.href = '/edit-rooms'
+    }
+  })
+}
+
+function generateComplaintsTable () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const complaints = userData.complaints
+  for (let i = 0; i < complaints.length; i++) {
+    const complaint = complaints[i]
+    const table = document.getElementById('complaint-table')
+    const row = table.insertRow()
+    const subject = row.insertCell(0)
+    const message = row.insertCell(1)
+    const status = row.insertCell(2)
+    const actions = row.insertCell(3)
+    subject.innerHTML = complaint.subject
+    message.innerHTML = complaint.message
+    status.innerHTML = complaint.status
+    actions.innerHTML = complaint.status === 'pending' ? '<button class="respond-to-complaint-btn">Respond to Complaint</button>' : ''
+    if(complaint.status === 'pending') {
+      actions.querySelector('.respond-to-complaint-btn').addEventListener('click', function () {
+        openRespondToComplaintModal(complaint.id, complaint.subject, complaint.message)
+      })
+    }
+  }
+}
+
+function openRespondToComplaintModal (id, subject, message) {
+  const modal = document.getElementById('respond-to-complaint-modal')
+  modal.style.display = 'block'
+  const complaintId = document.getElementById('id')
+  complaintId.value = id
+  complaintId.style.display = 'none'
+  const complaintSubject = document.getElementById('complaint-subject')
+  complaintSubject.innerHTML = 'Subject: ' + subject
+  const complaintMessage = document.getElementById('complaint-message')
+  complaintMessage.innerHTML = 'Message: ' + message
+  document.getElementById('close-modal-btn').addEventListener('click', function () {
+    modal.style.display = 'none'
+  })
+}
+
+function handleRespondToComplaint (event) {
+  const form = document.getElementById('respond-to-complaint-form')
+  const complaintId = document.getElementById('id')
+  fetch('/respond-to-complaint', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      id: complaintId.value,
+      response: form.elements[0].value
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      console.log('success')
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/view-complaints'
     }
   })
 }
