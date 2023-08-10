@@ -45,6 +45,9 @@ app.get('/admin-view-meetings', (req, res) => handleAdminViewMeetingsRequest(req
 app.get('/meetings', (req, res)=>{
   res.json(data);
 })
+app.get('/home', function (req, res) {
+  res.redirect('/');
+});
 app.listen(3000, () => console.log('Server is Running'))
 function addAttendee(id, attendees)
 {
@@ -334,17 +337,19 @@ function getDataForUser (username) {
 function obscurePaymentInformation (username) {
   const paymentInformation = data.users[username].paymentInformation
   const obscuredResult = {}
-  if (paymentInformation.paymentMethod === 'credit-card') {
-    obscuredResult.paymentMethod = 'credit-card'
-    obscuredResult.cardName = paymentInformation.cardName
-    obscuredResult.cardNumber = '**** **** **** ' + paymentInformation.cardNumber.slice(-4)
-    obscuredResult.expirationDate = paymentInformation.expirationDate
-    obscuredResult.securityCode = '***'
-  } else if (paymentInformation.paymentMethod === 'ach') {
-    obscuredResult.paymentMethod = 'ach'
-    obscuredResult.accountName = paymentInformation.accountName
-    obscuredResult.routingNumber = '****' + paymentInformation.routingNumber.slice(-4)
-    obscuredResult.accountNumber = '****' + paymentInformation.accountNumber.slice(-4)
+  if (paymentInformation != undefined && paymentInformation.hasOwnProperty("paymentMethod")){
+    if (paymentInformation.paymentMethod === 'credit-card') {
+      obscuredResult.paymentMethod = 'credit-card'
+      obscuredResult.cardName = paymentInformation.cardName
+      obscuredResult.cardNumber = '**** **** **** ' + paymentInformation.cardNumber.slice(-4)
+      obscuredResult.expirationDate = paymentInformation.expirationDate
+      obscuredResult.securityCode = '***'
+    } else if (paymentInformation.paymentMethod === 'ach') {
+      obscuredResult.paymentMethod = 'ach'
+      obscuredResult.accountName = paymentInformation.accountName
+      obscuredResult.routingNumber = '****' + paymentInformation.routingNumber.slice(-4)
+      obscuredResult.accountNumber = '****' + paymentInformation.accountNumber.slice(-4)
+    }
   }
   return obscuredResult
 }

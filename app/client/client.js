@@ -418,8 +418,10 @@ async function openModal (idx, meetingId, meetingAttendees) {
 
   // Populate the modal with attendees
   // Need to write code for the delete button XXXXXXXXXXXXXX
-
-  for (let attendee of meetingAttendees.split(",")) {
+  if (typeof(meetingAttendees) == 'string'){
+    meetingAttendees = meetingAttendees.split(',')
+  }
+  for (let attendee of meetingAttendees) {
     // Create LI objects
     const newLI = document.createElement("li");
 
