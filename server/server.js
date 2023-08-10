@@ -22,6 +22,7 @@ app.post('/file-complaint', (req, res) => handlePostFileComplaintRequest(req, re
 app.post('/create-room', (req, res) => handlePostRoomRequest(req, res))
 app.post('/edit-profile', (req, res) => handleEditProfileRequest(req, res))
 app.post('/respond-to-complaint', (req, res) => handlePostComplaintResponse(req, res))
+app.post('/remove-meeting', (req, res) => handlePostRemoveMeetingRequest(req, res))
 app.get('/client-home', (req, res) => handleClientHomeRequest(req, res))
 app.get('/admin-home', (req, res) => handleAdminHomeRequest(req, res))
 app.get('/client-profile', (req, res) => handleClientProfileRequest(req, res))
@@ -30,6 +31,8 @@ app.get('/file-complaint', (req, res) => handleFileComplaintRequest(req, res))
 app.get('/register', (req, res) => res.sendFile(path.join(__dirname, '../app/pages/registration.html')))
 app.get('/edit-rooms', (req, res) => handleEditRoomsRequest(req, res))
 app.get('/view-complaints', (req, res) => handleViewComplaintsRequest(req, res))
+app.get('/admin-view-meetings', (req, res) => handleAdminViewMeetingsRequest(req, res))
+
 app.listen(3000, () => console.log('Server is Running'))
 
 function handleLoginRequest (req, res) {
@@ -61,7 +64,12 @@ function handleLoginRequest (req, res) {
 
     // Set the session ID as a cookie
     res.cookie('sessionId', sessionId, { maxAge: 3600000, httpOnly: true })
-    const userData = getDataForUser(username)
+    let userData
+    if (users[username].type === 'client') {
+      userData = getDataForUser(username)
+    } else {
+      userData = getAdminDataForUser(username)
+    }
     res.json({ redirectTo: users[username].type === 'client' ? '/client-home' : '/admin-home', userData })
   } else {
     res.status(401).json({ message: 'Invalid username or password' })
@@ -192,7 +200,13 @@ function handleEditPaymentInformationRequest (req, res) {
       }
     })
     res.statusCode = 200
-    res.json({ userData: getDataForUser(user) })
+    let userData
+    if (data.users[user].type === 'client') {
+      userData = getDataForUser(user)
+    } else {
+      userData = getAdminDataForUser(user)
+    }
+    res.json({ userData: userData })
   }
 }
 
@@ -361,11 +375,9 @@ function handleViewComplaintsRequest (req, res) {
 function handlePostComplaintResponse (req, res) {
   if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
     const newData = data
-    console.log(req.body)
     const complaintId = req.body.id
     const response = req.body.response
     newData.complaints = newData.complaints.map(complaint => {
-      console.log(complaint.id, complaintId)
       if (complaint.id === complaintId) {
         complaint.response = response
         complaint.status = 'resolved'
@@ -380,4 +392,34 @@ function handlePostComplaintResponse (req, res) {
     res.statusCode = 200
     res.json({ userData: getDataForUser(newData.sessions[req.cookies.sessionId].username) })
   }
+}
+
+function handleAdminViewMeetingsRequest (req, res) {
+  if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
+    res.sendFile(path.join(__dirname, '../app/pages/admin-view-meetings.html'))
+  } else {
+    res.sendFile(path.join(__dirname, '../app/pages/unauthorized.html'))
+  }
+}
+
+function handlePostRemoveMeetingRequest (req, res) {
+  if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
+    const newData = data
+    const meetingId = req.body.id
+    newData.meetings = newData.meetings.filter(meeting => meeting.id !== meetingId)
+    fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
+      if (err) {
+        return res.status(500).json({ message: 'Error updating session information' })
+      }
+    })
+    res.statusCode = 200
+    res.json({ userData: getDataForUser(newData.sessions[req.cookies.sessionId].username) })
+  }
+}
+
+function getAdminDataForUser(username) {
+  const userData = getDataForUser(username)
+  userData.complaints = data.complaints
+  userData.meetings = data.meetings
+  return userData
 }

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>View Meetings - PennStateSoft MSS</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
+</head>
+<body>
+<header>
+    <img src="../assets/penn-state-shield.png" alt="PennStateSoft Logo">
+    <nav>
+        <ul>
+            <li><a href="/admin-home">Home</a></li>
+            <li><a href="/edit-rooms">Edit Rooms</a></li>
+            <li><a href="/view-complaints">View Complaints</a></li>
+            <li><a href="/update-billing">Update Billing</a></li>
+            <li><a href="/registration">Create Admin Account</a></li>
+            <li><button type="button" id="logout">Logout</button></li>
+        </ul>
+    </nav>
+</header>
+<body>
+    <main>
+        <!-- Select a room switcher -->
+        <div id="select-room">
+            <label for="room">Select a Room:</label>
+            <select id="room">
+                <option value="all">All Rooms</option>
+            </select>
+        </div>
+        <!-- Day or Week switcher -->
+        <div id="select-day-or-week">
+            <label for="day-or-week">View:</label>
+            <select id="day-or-week">
+                <option value="day">Day</option>
+                <option value="week">Week</option>
+            </select>
+        </div>
+        <!-- Day table -->
+        <table id="day-table">
+            <tr>
+                <th>Time</th>
+                <th>Room</th>
+                <th>Organizer</th>
+                <th>Attendees</th>
+                <th>Actions</th>
+            </tr>
+        </table>
+        <!-- Week table -->
+        <table id="week-table" style="display:none;">
+            <tr>
+                <th>Time</th>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+            </tr>
+        </table>
+
+    </main>
+<footer>
+    <!-- footer details can be inserted here -->
+</footer>
+    <script type="module" src="../client/client.js"></script>
+</body>
+</html>

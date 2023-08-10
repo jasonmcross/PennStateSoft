@@ -50,6 +50,15 @@ if (window.location.pathname === '/view-complaints') {
   generateComplaintsTable()
 }
 
+if (window.location.pathname === '/admin-view-meetings') {
+  document.getElementById('room').onchange = handleRoomSwitcherChange
+  document.getElementById('day-or-week').onchange = handleDayOrWeek
+
+  addRoomsToSwitcher()
+  generateMeetingTableDayView()
+  generateMeetingTableWeekView()
+}
+
 if (window.location.pathname === '/') {
   document.getElementById('login-form').addEventListener('submit', handleLogin)
 }
@@ -153,7 +162,6 @@ if (window.location.pathname === '/edit-rooms') {
 
 async function handleLogin (event) {
   event.preventDefault()
-  console.log('here')
 
   const username = document.getElementById('username').value
   const password = document.getElementById('password').value
@@ -308,12 +316,10 @@ function openModal () {
 }
 
 function populateAttendeesDropdown () {
-  console.log('here')
   const attendeesDropdown = document.getElementById('attendees-dropdown')
 
   // Get user data from localStorage
   const userData = JSON.parse(localStorage.getItem('userData'))
-  console.log(userData)
   if (userData && userData.users) {
     const users = userData.users
 
@@ -527,7 +533,7 @@ function generateComplaintsTable () {
     message.innerHTML = complaint.message
     status.innerHTML = complaint.status
     actions.innerHTML = complaint.status === 'pending' ? '<button class="respond-to-complaint-btn">Respond to Complaint</button>' : ''
-    if(complaint.status === 'pending') {
+    if (complaint.status === 'pending') {
       actions.querySelector('.respond-to-complaint-btn').addEventListener('click', function () {
         openRespondToComplaintModal(complaint.id, complaint.subject, complaint.message)
       })
@@ -564,11 +570,141 @@ function handleRespondToComplaint (event) {
     })
   }).then(response => {
     if (response.status === 200) {
-      console.log('success')
       response.json().then(data => {
         localStorage.setItem('userData', JSON.stringify(data.userData))
       })
       window.location.href = '/view-complaints'
     }
   })
+}
+
+function addRoomsToSwitcher () {
+  const roomSelect = document.getElementById('room')
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const rooms = userData.rooms
+  for (let i = 0; i < rooms.length; i++) {
+    const room = rooms[i]
+    const option = document.createElement('option')
+    option.value = room.name
+    option.text = room.name
+    option.innerHTML = room.name
+    roomSelect.add(option)
+  }
+}
+
+function generateMeetingTableDayView () {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  let meetings = userData.meetings
+  const table = document.getElementById('day-table')
+  const roomFilter = document.getElementById('room')
+  if (roomFilter.value !== 'all') {
+    meetings = meetings.filter(meeting => meeting.meetingRoom === roomFilter.value)
+  }
+  for (let i = 0; i < meetings.length; i++) {
+    const meeting = meetings[i]
+    // If meeting is today, add to table. Replace / with - and format is YYYY-MM-DD for today's date
+    if (meeting.meetingDate === new Date().toISOString().slice(0, 10).replace(/-/g, '-')) {
+      const row = table.insertRow()
+      const time = row.insertCell(0)
+      const room = row.insertCell(1)
+      const organizer = row.insertCell(2)
+      const attendees = row.insertCell(3)
+      const actions = row.insertCell(4)
+      time.innerHTML = meeting.meetingTime
+      room.innerHTML = meeting.meetingRoom
+      organizer.innerHTML = meeting.organizer
+      attendees.innerHTML = meeting.attendees
+      actions.innerHTML = '<button class="remove-meeting-btn">Remove Meeting</button>'
+      actions.querySelector('.remove-meeting-btn').addEventListener('click', function () {
+        handleRemoveMeeting(meeting.id)
+      })
+    }
+  }
+}
+
+function handleRoomSwitcherChange () {
+  // Clear all non header rows
+  const dayTable = document.getElementById('day-table')
+  for (let i = dayTable.rows.length - 1; i > 0; i--) {
+    dayTable.deleteRow(i)
+  }
+  const weekTable = document.getElementById('week-table')
+  for (let i = weekTable.rows.length - 1; i > 0; i--) {
+    weekTable.deleteRow(i)
+  }
+  generateMeetingTableDayView()
+  generateMeetingTableWeekView()
+}
+
+function handleDayOrWeek () {
+  const dayOrWeek = document.getElementById('day-or-week')
+  if (dayOrWeek.value === 'day') {
+    document.getElementById('day-table').style.display = 'block'
+    document.getElementById('week-table').style.display = 'none'
+  } else {
+    document.getElementById('day-table').style.display = 'none'
+    document.getElementById('week-table').style.display = 'block'
+  }
+}
+
+function handleRemoveMeeting (id) {
+  fetch('/remove-meeting', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      id
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/admin-view-meetings'
+    }
+  })
+}
+
+function generateMeetingTableWeekView () {
+  const table = document.getElementById('week-table')
+  const roomFilter = document.getElementById('room')
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  let meetings = userData.meetings
+
+  // Filter the meetings based on the room selection
+  if (roomFilter.value !== 'all') {
+    meetings = meetings.filter(meeting => meeting.meetingRoom === roomFilter.value)
+  }
+
+  // Generate rows for each hour, as done previously
+  for (let i = 9; i <= 17; i++) {
+    const row = table.insertRow()
+    row.insertCell(0).innerHTML = i + ':00'
+    for (let j = 1; j <= 5; j++) {
+      row.insertCell(j).innerHTML = '<div class="week-day-cell"></div>'
+    }
+  }
+
+  // Populate the table with filtered meetings for the week
+  for (let i = 0; i < meetings.length; i++) {
+    const meeting = meetings[i]
+    const meetingDate = new Date(meeting.meetingDate)
+    const meetingDay = meetingDate.getDay()
+    if (meetingDay < 1 || meetingDay > 5) continue
+
+    const meetingTime = meeting.meetingTime.split(':')
+    const meetingHour = parseInt(meetingTime[0], 10)
+    if (meetingHour < 9 || meetingHour > 17) continue
+
+    const meetingRow = table.rows[meetingHour - 9]
+    const meetingCell = meetingRow.cells[meetingDay]
+    const meetingInfo = 'Room: ' + meeting.meetingRoom + ' | Organizer: ' + meeting.organizer + ' | Attendees: ' + meeting.attendees
+
+    if (meetingCell.innerHTML.includes('week-day-cell')) {
+      meetingCell.innerHTML = meetingInfo
+    } else {
+      meetingCell.innerHTML += '<br>' + meetingInfo
+    }
+  }
 }
