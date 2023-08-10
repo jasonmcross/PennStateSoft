@@ -102,25 +102,31 @@ function handleClientHomeRequest (req, res) {
   if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     res.sendFile(path.join(__dirname, '../app/pages/client-home.html'))
   } else {
-    res.redirect('/')
+    res.sendFile(path.join(__dirname, '../app/pages/unauthorized.html'))
   }
 }
 
 function handleAdminHomeRequest (req, res) {
   if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
     res.sendFile(path.join(__dirname, '../app/pages/admin-home.html'))
+  } else {
+    res.sendFile(path.join(__dirname, '../app/pages/unauthorized.html'))
   }
 }
 
 function handleClientProfileRequest (req, res) {
   if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     res.sendFile(path.join(__dirname, '../app/pages/client-profile.html'))
+  } else {
+    res.sendFile(path.join(__dirname, '../app/pages/unauthorized.html'))
   }
 }
 
 function handleCreateMeetingRequest (req, res) {
   if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     res.sendFile(path.join(__dirname, '../app/pages/create-meeting.html'))
+  } else {
+    res.sendFile(path.join(__dirname, '../app/pages/unauthorized.html'))
   }
 }
 
@@ -130,16 +136,26 @@ function handlePostCreateMeetingRequest (req, res) {
     const username = newData.sessions[req.cookies.sessionId].username
     const meetingData = req.body
     if (checkIfRoomIsAvailable(meetingData.meetingRoom, meetingData.meetingTime, meetingData.meetingDate)) {
-      meetingData.organizer = username
-      meetingData.id = uuidv4()
-      newData.meetings.push(meetingData)
-      fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
-        if (err) {
-          return res.status(500).json({ message: 'Error updating session information' })
+      if (checkIfAttendeesAreAvailable(meetingData.attendees, meetingData.meetingTime, meetingData.meetingDate)) {
+        if (checkIfOrganizerIsAvailable(username, meetingData.meetingTime, meetingData.meetingDate)) {
+          meetingData.organizer = username
+          meetingData.id = uuidv4()
+          newData.meetings.push(meetingData)
+          fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
+            if (err) {
+              return res.status(500).json({ message: 'Error updating session information' })
+            }
+          })
+          res.statusCode = 200
+          res.json({ userData: getDataForUser(username) })
+        } else {
+          res.statusCode = 400
+          res.json({ message: 'You are not available at that time' })
         }
-      })
-      res.statusCode = 200
-      res.json({ userData: getDataForUser(username) })
+      } else {
+        res.statusCode = 400
+        res.json({ message: 'One or more attendees are not available at that time' })
+      }
     } else {
       res.statusCode = 400
       res.json({ message: 'The room is not available at that time' })
@@ -148,14 +164,18 @@ function handlePostCreateMeetingRequest (req, res) {
 }
 
 app.get('/meeting/:id', function (req, res) {
-  if (req.cookies.session === '1') {
+  if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     res.sendFile(path.join(__dirname, '../app/pages/meeting-detail.html'))
+  } else {
+    res.sendFile(path.join(__dirname, '../app/pages/unauthorized.html'))
   }
 })
 
 function handleFileComplaintRequest (req, res) {
   if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'client')) {
     res.sendFile(path.join(__dirname, '../app/pages/file-complaint.html'))
+  } else {
+    res.sendFile(path.join(__dirname, '../app/pages/unauthorized.html'))
   }
 }
 
@@ -267,6 +287,8 @@ function handlePostFileComplaintRequest (req, res) {
 function handleEditRoomsRequest (req, res) {
   if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
     res.sendFile(path.join(__dirname, '../app/pages/edit-rooms.html'))
+  } else {
+    res.sendFile(path.join(__dirname, '../app/pages/unauthorized.html'))
   }
 }
 
@@ -299,4 +321,29 @@ function handlePostRemoveRoomRequest (req, res) {
     res.statusCode = 200
     res.json({ userData: getDataForUser(newData.sessions[req.cookies.sessionId].username) })
   }
+}
+
+function checkIfOrganizerIsAvailable (organizer, time, date) {
+  const meetings = data.meetings
+  for (let i = 0; i < meetings.length; i++) {
+    if (meetings[i].organizer === organizer && meetings[i].meetingTime === time && meetings[i].meetingDate === date) {
+      return false
+    }
+  }
+  return true
+}
+
+function checkIfAttendeesAreAvailable (attendees, time, date) {
+  const meetings = data.meetings
+  for (let i = 0; i < meetings.length; i++) {
+    for (let j = 0; j < attendees.length; j++) {
+      if (meetings[i].attendees.includes(attendees[j]) && meetings[i].meetingTime === time && meetings[i].meetingDate === date) {
+        return false
+      }
+      if (meetings[i].organizer === attendees[j] && meetings[i].meetingTime === time && meetings[i].meetingDate === date) {
+        return false
+      }
+    }
+  }
+  return true
 }
