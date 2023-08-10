@@ -1,3 +1,47 @@
+let GV_USER_DATA;
+
+async function removeAttendee(id, att)
+{
+  console.log ("removeAttendee:", id, att);
+  // Find the associated meeting.
+    
+  // Remove the attendee
+
+  // Update localstorage with the new datastructure
+
+
+  // If server based, then send the request to the server where it would then handle the remove
+  /*
+  Server already has a route ready to receive the request. Here is the route model...
+
+  app.post ('/removeAttendees', (req,res)=>{
+    console.log ("newAttendees", req.body);
+    removeAttendee(req.body.meetingId, req.body.attendee);
+    res.json({message:"Added"});
+  })
+  
+  */
+
+  await fetch('/removeAttendees', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      meetingId: id,
+      attendee: att
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(() => {
+        window.location.href = '/client-home'
+      })
+    }
+  });
+
+
+}
+
 if (window.location.pathname === '/register') {
   document.getElementById('registration-form').addEventListener('submit', handleRegister)
 }
@@ -134,6 +178,63 @@ if (window.location.pathname === '/client-profile') {
     }
   })
 }
+
+// Event listener on add-attendee-btn handles the addition of attendees to a meeting
+// Need to track the Modify Attendees button that was clicked, and which meeting it connects to.
+document.getElementById('add-attendee-btn').addEventListener('click', async function(event) {
+    // Get the attendee name to add from the input field
+    // Multiple additions can be comma separated
+    const newAttendeesInput = document.getElementById("new-attendee")
+    const modal = document.getElementById('modify-attendees-modal')
+    let newAttendees = newAttendeesInput.value.trim()
+
+    if (newAttendees.length == 0) {
+      // Warning message. XXXXXXXXXX
+      alert("Please enter an attendee to add.")
+      return
+    }
+
+    // Get the meeting ID
+    const meetingID = document.getElementById('hiddenMeetingIdField').value
+    
+    // Update localstorage? XXXXXXXXXXXXXXXXX
+    // Perhaps contemplate the relationship between data on localstorage vs data on server XXXXXX
+
+    // Go through the meetings.
+    // Find the one with the matching id.
+    // Add the new attendee(s) to that meeting.
+    // XXXXXXXXX
+
+    // Use fetch to send the meeting ID and new attendee to the server.
+    // Need to create route on server to handle action XXXXXXXX
+    // await fetch ....
+
+    // Wait an OKAY response from the server.
+    alert("Adding " + newAttendees + " to meeting with ID " + meetingID)
+    console.log (GV_USER_DATA.meetings[GV_MEETING_IDX])
+    GV_USER_DATA.meetings[GV_MEETING_IDX].attendees+", "+newAttendees;
+    const data ={
+      meetingId: GV_USER_DATA.meetings[GV_MEETING_IDX].id,
+      attendees:newAttendees
+    }
+    await fetch('/newAttendees', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    // Clear the input and meetingID fields.
+    newAttendeesInput.value = ""
+    document.getElementById('hiddenMeetingIdField').value
+    
+    // Hide the modal div.
+    modal.style.display = 'none'
+    // Refresh the general meeting list.
+    window.location.href="/client-home"
+})
+
+
 
 async function handleLogin (event) {
   event.preventDefault()
@@ -273,14 +374,65 @@ async function handleEditProfile (event) {
   })
 }
 
-function openModal () {
+let GV_MEETING_IDX=0;
+async function openModal (idx, meetingId, meetingAttendees) {
+
+  // function removeAttendee(A,B) {
+  //   console.log("REMOVE",A,B);
+  // }
+
+  // function test() {
+  //   console.log("TEST WORKED!")
+  // }
+
+  console.log (idx, "openModal",GV_USER_DATA.meetings[idx]);
+  GV_MEETING_IDX=idx;
   const modal = document.getElementById('modify-attendees-modal')
   const attendeesList = document.getElementById('attendees-list')
-
+  console.log(meetingAttendees)
   // Clear previous attendees
   attendeesList.innerHTML = ''
 
   // Populate the modal with attendees
+  // Need to write code for the delete button XXXXXXXXXXXXXX
+
+  for (let attendee of meetingAttendees.split(",")) {
+    // Create LI objects
+    const newLI = document.createElement("li");
+
+    // Add the attendee string to the LI object
+    const attendeeString = document.createTextNode(attendee + " ");
+    newLI.appendChild(attendeeString);
+
+    // Create the button
+    const deleteButton = document.createElement("button");
+    deleteButton.innerText = "X";
+
+    // Add an event listener to the button -- must pass meeting ID and attendee name
+    deleteButton.addEventListener("click",() => {
+      //alert("DELETE " + attendee + " from " + meetingId);
+      removeAttendee(meetingId,attendee);
+    });
+
+    // Add the button to the LI object
+    newLI.appendChild(deleteButton);
+
+    // Add LI object to the attendeesList UL-parent
+    attendeesList.appendChild(newLI);
+
+  }
+
+  // let html = ""
+  // for (let attendee of meetingAttendees.split(",")) {
+  //   //html += `<li>${attendee} <button onClick="removeAttendee('${meetingId}', '${attendee}')">X</button></li>\n`
+  //   html += `<li>${attendee} <button onClick="test();">X</button></li>\n`
+  // }
+  // console.log ("HTML", html);
+  // attendeesList.innerHTML = html
+
+  // Set the hidden field with meetingId
+  // Needed because changes to attendees need to be attached to a specific meeting
+  document.getElementById("hiddenMeetingIdField").value = meetingId
 
   // Show the modal
   modal.style.display = 'block'
@@ -311,11 +463,19 @@ function populateAttendeesDropdown () {
   }
 }
 
-function generateMeetingTable () {
-  const userData = JSON.parse(localStorage.getItem('userData'))
-  const meetings = userData.meetings
+async function generateMeetingTable () {
+  // Appears that the client is drawing data from localstorage rather than
+  // from the server here. Is this intended? XXXXXXXXXXXX
+  const temp = JSON.parse(localStorage.getItem('userData'));
+  console.log ("LS", temp);
+  const resp = await fetch ("/meetings");
+  GV_USER_DATA=await resp.json();
+  //console.log ("RESP", resp);
+  console.log ("USERDATA", GV_USER_DATA);
+  const meetings = GV_USER_DATA.meetings
   for (let i = 0; i < meetings.length; i++) {
     const meeting = meetings[i]
+   // console.log("meeting", meeting)
     const table = document.getElementById('meeting-table')
     const row = table.insertRow()
     const meetingName = row.insertCell(0)
@@ -333,7 +493,7 @@ function generateMeetingTable () {
     type.innerHTML = meeting.type
     actions.innerHTML = '<button class="modify-attendees-btn">Modify Attendees</button>'
     actions.querySelector('.modify-attendees-btn').addEventListener('click', function () {
-      openModal(meeting.attendees)
+      openModal(i, meeting.id,meeting.attendees)
     })
   }
 }

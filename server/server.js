@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser')
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid')
 const data = require('../database/data.json')
-
+console.log ("USER DATA", data);
 const app = express()
 
 app.use(express.json(), cookieParser())
@@ -18,7 +18,16 @@ app.post('/register', (req, res) => handleRegisterRequest(req, res))
 app.post('/logout', (req, res) => res.clearCookie('session').json({ message: 'Logout successful' }))
 app.post('/payment-information', (req, res) => handleEditPaymentInformationRequest(req, res))
 app.post('/create-meeting', (req, res) => handlePostCreateMeetingRequest(req, res))
-
+app.post ('/newAttendees', (req,res)=>{
+  console.log ("newAttendees", req.body);
+  addAttendee(req.body.meetingId, req.body.attendees);
+  res.json({message:"Added"});
+})
+app.post ('/removeAttendees', (req,res)=>{
+  console.log ("newAttendees", req.body);
+  removeAttendee(req.body.meetingId, req.body.attendee);
+  res.json({message:"Removed"});
+})
 app.post('/edit-profile', (req, res) => handleEditProfileRequest(req, res))
 app.get('/client-home', (req, res) => handleClientHomeRequest(req, res))
 app.get('/admin-home', (req, res) => handleAdminHomeRequest(req, res))
@@ -26,9 +35,74 @@ app.get('/client-profile', (req, res) => handleClientProfileRequest(req, res))
 app.get('/create-meeting', (req, res) => handleCreateMeetingRequest(req, res))
 app.get('/file-complaint', (req, res) => handleFileComplaintRequest(req, res))
 app.get('/register', (req, res) => res.sendFile(path.join(__dirname, '../app/pages/registration.html')))
-
+app.get('/meetings', (req, res)=>{
+  res.json(data);
+})
 app.listen(3000, () => console.log('Server is Running'))
+function addAttendee(id, attendees)
+{
+  for (let i in data.meetings)
+  {
+    const meeting = data.meetings[i];
+   // console.log ("MEETING:", meeting)
+    if(meeting.id===undefined)
+      continue;
+   // console.log ("checking", meeting.id,id  )
+    if(data.meetings[i]['id']===id)
+    {
+      console.log ("Adding to ", meeting);
+      data.meetings[i].attendees+=", "+attendees;
+    }
+  } 
+  savaData();
+}
 
+function removeAttendee(id, attendee)
+{
+  // Incoming attendee needs to be trimmed
+  attendee = attendee.trim()
+  console.log("Remove " + attendee + " from meeting " + id)
+  for (let i in data.meetings)
+  {
+    const meeting = data.meetings[i];
+   // console.log ("MEETING:", meeting)
+    if(meeting.id===undefined)
+      continue;
+   // console.log ("checking", meeting.id,id  )
+    if(data.meetings[i]['id']===id)
+    {
+      //console.log ("Adding to ", meeting);
+      // attendees in the server data structure appears to be a string ("bob, steve, dana", "bob")
+      // Need to do a split on "," to make an array of attendees, then use that to rebuild
+      // a string that then gets reassigned to meetings[n].attendees.
+      let currentAttendees = data.meetings[i].attendees.split(",");
+      let newAttendees = [];
+
+      //let attendees="";
+      for (let a of currentAttendees)
+      {
+        a = a.trim();
+        if (a!==attendee)
+        {
+          //attendees+=a+",";
+          newAttendees.push(a);
+        }
+      }
+      data.meetings[i].attendees= newAttendees.join(",");
+    }
+  } 
+  savaData();
+}
+
+function savaData ()
+{
+  // Write the updated data back to the JSON file
+  fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(data), (err) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error updating session information' })
+    }
+  })
+}
 function handleLoginRequest (req, res) {
   const { username, password: hashedPassword } = req.body
   const users = data.users
@@ -50,12 +124,14 @@ function handleLoginRequest (req, res) {
     data.sessions[sessionId] = { username, expires: Date.now() + 3600000 }
 
     // Write the updated data back to the JSON file
+    savaData();
+    /*
     fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(data), (err) => {
       if (err) {
         return res.status(500).json({ message: 'Error updating session information' })
       }
     })
-
+*/
     // Set the session ID as a cookie
     res.cookie('sessionId', sessionId, { maxAge: 3600000, httpOnly: true })
     const userData = getDataForUser(username)
