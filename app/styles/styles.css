@@ -120,7 +120,7 @@ tr {
 }
 
 /* Styles for the modal background overlay */
-#modify-attendees-modal {
+#modify-attendees-modal, #respond-to-complaint-modal {
     display: none; /* The modal is hidden by default */
     position: fixed; /* Fix the position so it always stays in view even if user scrolls */
     top: 0;
