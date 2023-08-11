@@ -34,6 +34,8 @@ app.post ('/removeAttendees', (req,res)=>{
 app.post('/edit-profile', (req, res) => handleEditProfileRequest(req, res))
 app.post('/respond-to-complaint', (req, res) => handlePostComplaintResponse(req, res))
 app.post('/remove-meeting', (req, res) => handlePostRemoveMeetingRequest(req, res))
+app.post('/update-billing', (req, res) => handlePostUpdateBillingRequest(req, res))
+
 app.get('/client-home', (req, res) => handleClientHomeRequest(req, res))
 app.get('/admin-home', (req, res) => handleAdminHomeRequest(req, res))
 app.get('/client-profile', (req, res) => handleClientProfileRequest(req, res))
@@ -49,6 +51,7 @@ app.get('/meetings', (req, res)=>{
 app.get('/home', function (req, res) {
   res.redirect('/');
 });
+app.get('/update-billing', (req, res) => handleUpdateBillingRequest(req, res))
 app.listen(3000, () => console.log('Server is Running'))
 function addAttendee(id, attendees)
 {
@@ -145,10 +148,11 @@ function handleRegisterRequest (req, res) {
   const hashedPassword = req.body.password
   const firstName = req.body.firstName
   const lastName = req.body.lastName
-  const type = req.body.type
   const users = data.users
   if (users[username]) {
     res.status(401).json({ message: 'Username already exists' })
+  } else if (!username.includes('@company.com')) {
+    res.status(400).json({ message: 'Username must be a valid company email address' })
   } else {
     const newData = data
     const sessionId = uuidv4()
@@ -157,10 +161,11 @@ function handleRegisterRequest (req, res) {
       password: hashedPassword,
       firstName,
       lastName,
-      type
+      type: 'client'
     }
     newData.sessions[sessionId] = {
-      username
+      username,
+      expires: Date.now() + 3600000
     }
     saveData();
     /*
@@ -171,7 +176,14 @@ function handleRegisterRequest (req, res) {
     })
     */
     res.cookie('sessionId', sessionId, { maxAge: 3600000, httpOnly: true })
-    res.json({ firstName, lastName, type, meetings: [], attendee: [], complaints: [] })
+    res.statusCode = 200
+    let userData
+    if (data.users[username].type === 'client') {
+      userData = getDataForUser(username)
+    } else {
+      userData = getAdminDataForUser(username)
+    }
+    res.json({ userData })
   }
 }
 
@@ -333,10 +345,14 @@ function getDataForUser (username) {
 function obscurePaymentInformation (username) {
   const paymentInformation = data.users[username].paymentInformation
   const obscuredResult = {}
+  if(paymentInformation === undefined) {
+    return undefined
+  }
+  else {
   if (paymentInformation != undefined && paymentInformation.hasOwnProperty("paymentMethod")){
     if (paymentInformation.paymentMethod === 'credit-card') {
       obscuredResult.paymentMethod = 'credit-card'
-      obscuredResult.cardName = paymentInformation.cardName
+      obscuredResult.accountName = paymentInformation.accountName
       obscuredResult.cardNumber = '**** **** **** ' + paymentInformation.cardNumber.slice(-4)
       obscuredResult.expirationDate = paymentInformation.expirationDate
       obscuredResult.securityCode = '***'
@@ -345,9 +361,9 @@ function obscurePaymentInformation (username) {
       obscuredResult.accountName = paymentInformation.accountName
       obscuredResult.routingNumber = '****' + paymentInformation.routingNumber.slice(-4)
       obscuredResult.accountNumber = '****' + paymentInformation.accountNumber.slice(-4)
-    }
   }
   return obscuredResult
+  }
 }
 
 function checkIfRoomIsAvailable (room, time, date) {
@@ -497,7 +513,43 @@ function handlePostRemoveMeetingRequest (req, res) {
 
 function getAdminDataForUser(username) {
   const userData = getDataForUser(username)
+
+  // Add complaints and meetings to the userData
   userData.complaints = data.complaints
   userData.meetings = data.meetings
+
+  // Filter out the current user and remove passwords from the user list
+  userData.users = Object.keys(data.users).reduce((acc, curr) => {
+    if (curr !== username) {
+      const { password, ...rest } = data.users[curr] // Using object destructuring to omit the password
+      acc[curr] = rest // Build new user object without password
+    }
+    return acc
+  }, {})
+
   return userData
+}
+
+function handleUpdateBillingRequest (req, res) {
+  if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
+    res.sendFile(path.join(__dirname, '../app/pages/update-billing.html'))
+  } else {
+    res.sendFile(path.join(__dirname, '../app/pages/unauthorized.html'))
+  }
+}
+
+function handlePostUpdateBillingRequest (req, res) {
+  if (checkSession(req.cookies.sessionId) && checkPermission(req.cookies.sessionId, 'admin')) {
+    const newData = data
+    const username = req.body.username
+    newData.users[username].paymentInformation = req.body.paymentInformation
+    fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
+      if (err) {
+        return res.status(500).json({ message: 'Error updating session information' })
+      }
+    })
+    res.statusCode = 200
+    res.json({ userData: getAdminDataForUser(newData.sessions[req.cookies.sessionId].username) })
+  }
+}
 }

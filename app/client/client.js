@@ -166,8 +166,8 @@ if (window.location.pathname === '/client-profile') {
         body: JSON.stringify({
           paymentMethod,
           cardNumber: document.getElementById('card-number').value,
-          cardName: document.getElementById('full-name-cc').value,
-          expirationDate: document.getElementById('billing-zip').value,
+          accountName: document.getElementById('accountName').value,
+          expirationDate: document.getElementById('expiration-date').value,
           securityCode: document.getElementById('security-code').value
         })
       }).then(response => {
@@ -228,6 +228,10 @@ document.getElementById('add-attendee-btn').addEventListener('click', async func
 if (window.location.pathname === '/edit-rooms') {
   generateRoomTable()
   document.getElementById('room-form').addEventListener('submit', handleCreateRoom)
+}
+
+if (window.location.pathname === '/update-billing') {
+  generateUpdateBillingTable()
 }
 
 async function handleLogin (event) {
@@ -338,9 +342,11 @@ async function handleRegister (event) {
     body: JSON.stringify(body)
   }).then(response => {
     if (response.status === 200) {
-      window.location.href = '/home'
+      window.location.href = '/client-home'
     } else if (response.status === 401) {
       document.getElementById('error-message').innerHTML = 'Username already exists'
+    } else if (response.status === 400) {
+      document.getElementById('error-message').innerHTML = 'Username must be a valid email address'
     }
   })
 }
@@ -505,28 +511,35 @@ function generatePaymentInformationTableHeaders () {
   const userData = JSON.parse(localStorage.getItem('userData'))
   const paymentInformation = userData.paymentInformation
   const table = document.getElementById('payment-information-table')
-  if (paymentInformation.paymentMethod === 'credit-card') {
+  console.log(paymentInformation)
+  if (paymentInformation === undefined) {
     const row = table.insertRow()
     const paymentMethod = row.insertCell(0)
-    const cardName = row.insertCell(1)
-    const cardNumber = row.insertCell(2)
-    const expirationDate = row.insertCell(3)
-    const securityCode = row.insertCell(4)
-    paymentMethod.innerHTML = 'Payment Method'
-    cardName.innerHTML = 'Card Name'
-    cardNumber.innerHTML = 'Card Number'
-    expirationDate.innerHTML = 'Expiration Date'
-    securityCode.innerHTML = 'Security Code'
+    paymentMethod.innerHTML = 'No payment information on file'
   } else {
-    const row = table.insertRow()
-    const paymentMethod = row.insertCell(0)
-    const accountNumber = row.insertCell(1)
-    const routingNumber = row.insertCell(2)
-    const accountName = row.insertCell(3)
-    paymentMethod.innerHTML = 'Payment Method'
-    accountNumber.innerHTML = 'Account Number'
-    routingNumber.innerHTML = 'Routing Number'
-    accountName.innerHTML = 'Account Name'
+    if (paymentInformation.paymentMethod === 'credit-card') {
+      const row = table.insertRow()
+      const paymentMethod = row.insertCell(0)
+      const accountName = row.insertCell(1)
+      const cardNumber = row.insertCell(2)
+      const expirationDate = row.insertCell(3)
+      const securityCode = row.insertCell(4)
+      paymentMethod.innerHTML = 'Payment Method'
+      accountName.innerHTML = 'Card Name'
+      cardNumber.innerHTML = 'Card Number'
+      expirationDate.innerHTML = 'Expiration Date'
+      securityCode.innerHTML = 'Security Code'
+    } else {
+      const row = table.insertRow()
+      const paymentMethod = row.insertCell(0)
+      const accountNumber = row.insertCell(1)
+      const routingNumber = row.insertCell(2)
+      const accountName = row.insertCell(3)
+      paymentMethod.innerHTML = 'Payment Method'
+      accountNumber.innerHTML = 'Account Number'
+      routingNumber.innerHTML = 'Routing Number'
+      accountName.innerHTML = 'Account Name'
+    }
   }
 }
 
@@ -535,26 +548,28 @@ function generatePaymentInformationTable () {
   const paymentInformation = userData.paymentInformation
   const table = document.getElementById('payment-information-table')
   const row = table.insertRow()
-  if (paymentInformation.paymentMethod === 'credit-card') {
-    const paymentMethod = row.insertCell(0)
-    const cardName = row.insertCell(1)
-    const cardNumber = row.insertCell(2)
-    const expirationDate = row.insertCell(3)
-    const securityCode = row.insertCell(4)
-    cardName.innerHTML = paymentInformation.cardName
-    cardNumber.innerHTML = paymentInformation.cardNumber
-    expirationDate.innerHTML = paymentInformation.expirationDate
-    paymentMethod.innerHTML = paymentInformation.paymentMethod === 'credit-card' ? 'Credit Card' : 'ACH'
-    securityCode.innerHTML = paymentInformation.securityCode
-  } else if (paymentInformation.paymentMethod === 'ach') {
-    const paymentMethod = row.insertCell(0)
-    const accountNumber = row.insertCell(1)
-    const routingNumber = row.insertCell(2)
-    const accountName = row.insertCell(3)
-    paymentMethod.innerHTML = paymentInformation.paymentMethod === 'credit-card' ? 'Credit Card' : 'ACH'
-    accountNumber.innerHTML = paymentInformation.accountNumber
-    routingNumber.innerHTML = paymentInformation.routingNumber
-    accountName.innerHTML = paymentInformation.accountName
+  if (paymentInformation === undefined) { /* empty */ } else {
+    if (paymentInformation.paymentMethod === 'credit-card') {
+      const paymentMethod = row.insertCell(0)
+      const accountName = row.insertCell(1)
+      const cardNumber = row.insertCell(2)
+      const expirationDate = row.insertCell(3)
+      const securityCode = row.insertCell(4)
+      accountName.innerHTML = paymentInformation.accountName
+      cardNumber.innerHTML = paymentInformation.cardNumber
+      expirationDate.innerHTML = paymentInformation.expirationDate
+      paymentMethod.innerHTML = paymentInformation.paymentMethod === 'credit-card' ? 'Credit Card' : 'ACH'
+      securityCode.innerHTML = paymentInformation.securityCode
+    } else if (paymentInformation.paymentMethod === 'ach') {
+      const paymentMethod = row.insertCell(0)
+      const accountNumber = row.insertCell(1)
+      const routingNumber = row.insertCell(2)
+      const accountName = row.insertCell(3)
+      paymentMethod.innerHTML = paymentInformation.paymentMethod === 'credit-card' ? 'Credit Card' : 'ACH'
+      accountNumber.innerHTML = paymentInformation.accountNumber
+      routingNumber.innerHTML = paymentInformation.routingNumber
+      accountName.innerHTML = paymentInformation.accountName
+    }
   }
 }
 
@@ -830,4 +845,103 @@ function generateMeetingTableWeekView () {
       meetingCell.innerHTML += '<br>' + meetingInfo
     }
   }
+}
+
+function generateUpdateBillingTable(){
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  const users = userData.users
+  const table = document.getElementById('billing-table')
+
+  for (let i = 0; i < Object.keys(users).length; i++) {
+    const row = table.insertRow()
+    row.setAttribute('username', users[Object.keys(users)[i]].username)
+    const username = row.insertCell(0)
+    const firstName = row.insertCell(1)
+    const lastName = row.insertCell(2)
+    const paymentMethod = row.insertCell(3)
+    const accountNumber = row.insertCell(4)
+    const routingNumber = row.insertCell(5)
+    const accountName = row.insertCell(6)
+    const cardNumber = row.insertCell(7)
+    const expirationDate = row.insertCell(8)
+    const securityCode = row.insertCell(9)
+    const actions = row.insertCell(10)
+    const user = users[Object.keys(users)[i]]
+
+    username.innerHTML = user.username
+    firstName.innerHTML = user.firstName
+    lastName.innerHTML = user.lastName
+
+    if (user.paymentInformation === undefined) {
+      paymentMethod.innerHTML = '<input type="text" value="N/A">'
+      accountNumber.innerHTML = '<input type="text" value="N/A">'
+      routingNumber.innerHTML = '<input type="text" value="N/A">'
+      accountName.innerHTML = '<input type="text" value="N/A">'
+      cardNumber.innerHTML = '<input type="text" value="N/A">'
+      expirationDate.innerHTML = '<input type="text" value="N/A">'
+      securityCode.innerHTML = '<input type="text" value="N/A">'
+    } else {
+      paymentMethod.innerHTML = `<input type="text" name="paymentMethod" value="${user.paymentInformation.paymentMethod || 'N/A'}">`
+      accountNumber.innerHTML = `<input type="text" name="accountNumber" value="${user.paymentInformation.accountNumber || 'N/A'}">`
+      routingNumber.innerHTML = `<input type="text" name="routingNumber" value="${user.paymentInformation.routingNumber || 'N/A'}">`
+      accountName.innerHTML = `<input type="text" name="accountName" value="${user.paymentInformation.accountName || 'N/A'}">`
+      cardNumber.innerHTML = `<input type="text" name="cardNumber" value="${user.paymentInformation.cardNumber || 'N/A'}">`
+      expirationDate.innerHTML = `<input type="text" name="expirationDate" value="${user.paymentInformation.expirationDate || 'N/A'}">`
+      securityCode.innerHTML = `<input type="text" name="securityCode" value="${user.paymentInformation.securityCode || 'N/A'}">`
+    }
+    actions.innerHTML = '<button class="update-billing">Update Billing</button>'
+    actions.querySelector('.update-billing').addEventListener('click', function () {
+      handleUpdateBilling(user.username)
+    })
+  }
+}
+
+function handleUpdateBilling (username) {
+  // Get the values of all input fields
+  const row = document.querySelector(`[username="${username}"]`)
+  const paymentMethod = row.querySelector('[name="paymentMethod"]').value
+  const accountNumber = row.querySelector('[name="accountNumber"]').value
+  const routingNumber = row.querySelector('[name="routingNumber"]').value
+  const accountName = row.querySelector('[name="accountName"]').value
+  const cardNumber = row.querySelector('[name="cardNumber"]').value
+  const expirationDate = row.querySelector('[name="expirationDate"]').value
+  const securityCode = row.querySelector('[name="securityCode"]').value
+  let paymentInformation
+  if (paymentMethod === 'ach') {
+    paymentInformation = {
+      paymentMethod,
+      accountNumber,
+      routingNumber,
+      accountName
+    }
+  } else if (paymentMethod === 'credit-card') {
+    paymentInformation = {
+      accountName,
+      paymentMethod,
+      cardNumber,
+      expirationDate,
+      securityCode
+    }
+  }
+
+  const data = {
+    username,
+    paymentInformation
+  }
+
+  // Send a POST request to update the billing information
+  fetch('/update-billing', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(data => {
+        localStorage.setItem('userData', JSON.stringify(data.userData))
+      })
+      window.location.href = '/update-billing'
+    }
+  })
 }
