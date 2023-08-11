@@ -1,3 +1,31 @@
+let GV_USER_DATA;
+
+
+
+async function removeAttendee(id, att)
+{
+
+
+  await fetch('/removeAttendees', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      meetingId: id,
+      attendee: att
+    })
+  }).then(response => {
+    if (response.status === 200) {
+      response.json().then(() => {
+        window.location.href = '/client-home'
+      })
+    }
+  });
+
+
+}
+
 if (window.location.pathname === '/register') {
   document.getElementById('registration-form').addEventListener('submit', handleRegister)
 }
@@ -30,7 +58,6 @@ if (urlArr[urlArr.length - 2] === 'meeting') {
   document.getElementById('meeting-time').innerHTML = currentMeeting.meetingTime
   document.getElementById('organizer').innerHTML = currentMeeting.organizer
   document.getElementById('room-type').innerHTML = currentMeeting.type
-  // Currently reprints attendees as just one string. Not as list elements
   document.getElementById('attendees-list').innerHTML = currentMeeting.attendees
 }
 if (window.location.pathname === '/create-meeting') {
@@ -154,6 +181,49 @@ if (window.location.pathname === '/client-profile') {
     }
   })
 }
+
+// Event listener on add-attendee-btn handles the addition of attendees to a meeting
+// Need to track the Modify Attendees button that was clicked, and which meeting it connects to.
+document.getElementById('add-attendee-btn').addEventListener('click', async function(event) {
+    // Get the attendee name to add from the input field
+    // Multiple additions can be comma separated
+    const newAttendeesInput = document.getElementById("new-attendee")
+    const modal = document.getElementById('modify-attendees-modal')
+    let newAttendees = newAttendeesInput.value.trim()
+
+    if (newAttendees.length == 0) {
+      // Warning message. XXXXXXXXXX
+      alert("Please enter an attendee to add.")
+      return
+    }
+
+    // Get the meeting ID
+    const meetingID = document.getElementById('hiddenMeetingIdField').value
+
+    alert("Adding " + newAttendees + " to meeting with ID ")
+    console.log (GV_USER_DATA.meetings[GV_MEETING_IDX])
+    GV_USER_DATA.meetings[GV_MEETING_IDX].attendees+", "+newAttendees;
+    const data ={
+      meetingId: GV_USER_DATA.meetings[GV_MEETING_IDX].id,
+      attendees:newAttendees
+    }
+    await fetch('/newAttendees', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    // Clear the input and meetingID fields.
+    newAttendeesInput.value = ""
+    document.getElementById('hiddenMeetingIdField').value
+
+    // Hide the modal div.
+    modal.style.display = 'none'
+    // Refresh the general meeting list.
+    window.location.href="/client-home"
+})
+
 
 if (window.location.pathname === '/edit-rooms') {
   generateRoomTable()
@@ -303,14 +373,59 @@ async function handleEditProfile (event) {
   })
 }
 
-function openModal () {
+let GV_MEETING_IDX=0;
+async function openModal (idx, meetingId, meetingAttendees) {
+
+  // function removeAttendee(A,B) {
+  //   console.log("REMOVE",A,B);
+  // }
+
+  // function test() {
+  //   console.log("TEST WORKED!")
+  // }
+
+  console.log (idx, "openModal",GV_USER_DATA.meetings[idx]);
+  GV_MEETING_IDX=idx;
   const modal = document.getElementById('modify-attendees-modal')
   const attendeesList = document.getElementById('attendees-list')
-
+  console.log(meetingAttendees)
   // Clear previous attendees
   attendeesList.innerHTML = ''
 
   // Populate the modal with attendees
+  // Need to write code for the delete button XXXXXXXXXXXXXX
+  if (typeof(meetingAttendees) == 'string'){
+    meetingAttendees = meetingAttendees.split(',')
+  }
+  for (let attendee of meetingAttendees) {
+    // Create LI objects
+    const newLI = document.createElement("li");
+
+    // Add the attendee string to the LI object
+    const attendeeString = document.createTextNode(attendee + " ");
+    newLI.appendChild(attendeeString);
+
+    // Create the button
+    const deleteButton = document.createElement("button");
+    deleteButton.innerText = "X";
+
+    // Add an event listener to the button -- must pass meeting ID and attendee name
+    deleteButton.addEventListener("click",() => {
+      //alert("DELETE " + attendee + " from " + meetingId);
+      removeAttendee(meetingId,attendee);
+    });
+
+    // Add the button to the LI object
+    newLI.appendChild(deleteButton);
+
+    // Add LI object to the attendeesList UL-parent
+    attendeesList.appendChild(newLI);
+
+  }
+
+  // Set the hidden field with meetingId
+  // Needed because changes to attendees need to be attached to a specific meeting
+  document.getElementById("hiddenMeetingIdField").value = meetingId
 
   // Show the modal
   modal.style.display = 'block'
@@ -339,11 +454,19 @@ function populateAttendeesDropdown () {
   }
 }
 
-function generateMeetingTable () {
-  const userData = JSON.parse(localStorage.getItem('userData'))
-  const meetings = userData.meetings
+async function generateMeetingTable () {
+  // Appears that the client is drawing data from localstorage rather than
+  // from the server here. Is this intended? XXXXXXXXXXXX
+  const temp = JSON.parse(localStorage.getItem('userData'));
+  console.log ("LS", temp);
+  const resp = await fetch ("/meetings");
+  GV_USER_DATA=await resp.json();
+  //console.log ("RESP", resp);
+  console.log ("USERDATA", GV_USER_DATA);
+  const meetings = GV_USER_DATA.meetings
   for (let i = 0; i < meetings.length; i++) {
     const meeting = meetings[i]
+   // console.log("meeting", meeting)
     const table = document.getElementById('meeting-table')
     const row = table.insertRow()
     const meetingName = row.insertCell(0)
@@ -361,7 +484,7 @@ function generateMeetingTable () {
     type.innerHTML = meeting.type
     actions.innerHTML = '<button class="modify-attendees-btn">Modify Attendees</button>'
     actions.querySelector('.modify-attendees-btn').addEventListener('click', function () {
-      openModal(meeting.attendees)
+      openModal(i, meeting.id,meeting.attendees)
     })
   }
 }
