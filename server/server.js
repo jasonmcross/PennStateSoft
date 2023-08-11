@@ -21,10 +21,11 @@ app.post('/remove-room', (req, res) => handlePostRemoveRoomRequest(req, res))
 app.post('/file-complaint', (req, res) => handlePostFileComplaintRequest(req, res))
 app.post('/create-room', (req, res) => handlePostRoomRequest(req, res))
 app.post ('/newAttendees', (req,res)=>{
-  console.log ("newAttendees", req.body);
   addAttendee(req.body.meetingId, req.body.attendees);
   res.json({message:"Added"});
 })
+
+
 app.post ('/removeAttendees', (req,res)=>{
   console.log ("newAttendees", req.body);
   removeAttendee(req.body.meetingId, req.body.attendee);
@@ -38,7 +39,7 @@ app.get('/admin-home', (req, res) => handleAdminHomeRequest(req, res))
 app.get('/client-profile', (req, res) => handleClientProfileRequest(req, res))
 app.get('/create-meeting', (req, res) => handleCreateMeetingRequest(req, res))
 app.get('/file-complaint', (req, res) => handleFileComplaintRequest(req, res))
-app.get('/register', (req, res) => res.sendFile(path.join(__dirname, '../app/pages/registration.html')))
+app.get('/register', (req, res) => res.sendFile(path.formatjoin(__dirname, '../app/pages/registration.html')))
 app.get('/edit-rooms', (req, res) => handleEditRoomsRequest(req, res))
 app.get('/view-complaints', (req, res) => handleViewComplaintsRequest(req, res))
 app.get('/admin-view-meetings', (req, res) => handleAdminViewMeetingsRequest(req, res))
@@ -54,57 +55,46 @@ function addAttendee(id, attendees)
   for (let i in data.meetings)
   {
     const meeting = data.meetings[i];
-   // console.log ("MEETING:", meeting)
     if(meeting.id===undefined)
       continue;
-   // console.log ("checking", meeting.id,id  )
     if(data.meetings[i]['id']===id)
     {
       console.log ("Adding to ", meeting);
       data.meetings[i].attendees+=", "+attendees;
     }
   } 
-  savaData();
+  saveData();
 }
 
 function removeAttendee(id, attendee)
 {
   // Incoming attendee needs to be trimmed
   attendee = attendee.trim()
-  console.log("Remove " + attendee + " from meeting " + id)
   for (let i in data.meetings)
   {
     const meeting = data.meetings[i];
-   // console.log ("MEETING:", meeting)
     if(meeting.id===undefined)
       continue;
-   // console.log ("checking", meeting.id,id  )
     if(data.meetings[i]['id']===id)
     {
-      //console.log ("Adding to ", meeting);
-      // attendees in the server data structure appears to be a string ("bob, steve, dana", "bob")
-      // Need to do a split on "," to make an array of attendees, then use that to rebuild
-      // a string that then gets reassigned to meetings[n].attendees.
       let currentAttendees = data.meetings[i].attendees.split(",");
       let newAttendees = [];
 
-      //let attendees="";
       for (let a of currentAttendees)
       {
         a = a.trim();
         if (a!==attendee)
         {
-          //attendees+=a+",";
           newAttendees.push(a);
         }
       }
       data.meetings[i].attendees= newAttendees.join(",");
     }
   } 
-  savaData();
+  saveData();
 }
 
-function savaData ()
+function saveData ()
 {
   // Write the updated data back to the JSON file
   fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(data), (err) => {
@@ -134,14 +124,8 @@ function handleLoginRequest (req, res) {
     data.sessions[sessionId] = { username, expires: Date.now() + 3600000 }
 
     // Write the updated data back to the JSON file
-    savaData();
-    /*
-    fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(data), (err) => {
-      if (err) {
-        return res.status(500).json({ message: 'Error updating session information' })
-      }
-    })
-*/
+    saveData();
+
     // Set the session ID as a cookie
     res.cookie('sessionId', sessionId, { maxAge: 3600000, httpOnly: true })
     let userData
@@ -178,11 +162,14 @@ function handleRegisterRequest (req, res) {
     newData.sessions[sessionId] = {
       username
     }
+    saveData();
+    /*
     fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
       if (err) {
         return res.status(500).json({ message: 'Error updating session information' })
       }
     })
+    */
     res.cookie('sessionId', sessionId, { maxAge: 3600000, httpOnly: true })
     res.json({ firstName, lastName, type, meetings: [], attendee: [], complaints: [] })
   }
@@ -231,11 +218,14 @@ function handlePostCreateMeetingRequest (req, res) {
           meetingData.organizer = username
           meetingData.id = uuidv4()
           newData.meetings.push(meetingData)
+          saveData()
+          /*
           fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
             if (err) {
               return res.status(500).json({ message: 'Error updating session information' })
             }
           })
+          */
           res.statusCode = 200
           res.json({ userData: getDataForUser(username) })
         } else {
@@ -274,11 +264,14 @@ function handleEditPaymentInformationRequest (req, res) {
     const user = data.sessions[req.cookies.sessionId].username
     const newData = data
     newData.users[user].paymentInformation = req.body
+    saveData();
+    /*
     fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
       if (err) {
         return res.status(500).json({ message: 'Error updating session information' })
       }
     })
+    */
     res.statusCode = 200
     let userData
     if (data.users[user].type === 'client') {
@@ -310,11 +303,14 @@ function handleEditProfileRequest (req, res) {
     const newData = data
     newData.users[user].firstName = req.body.firstName
     newData.users[user].lastName = req.body.lastName
+    saveData();
+    /*
     fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
       if (err) {
         return res.status(500).json({ message: 'Error updating session information' })
       }
     })
+    */
     res.statusCode = 200
     res.json({ data: getDataForUser(user) })
   }
@@ -372,11 +368,14 @@ function handlePostFileComplaintRequest (req, res) {
     complaintData.user = username
     complaintData.id = uuidv4()
     newData.complaints.push(complaintData)
+    saveData();
+/*
     fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
       if (err) {
         return res.status(500).json({ message: 'Error updating session information' })
       }
     })
+    */
     res.statusCode = 200
     res.json({ userData: getDataForUser(username) })
   }
@@ -396,11 +395,8 @@ function handlePostRoomRequest (req, res) {
     const roomData = req.body
     roomData.id = uuidv4()
     newData.rooms.push(roomData)
-    fs.writeFile(path.join(__dirname, '../database/data.json'), JSON.stringify(newData), function (err) {
-      if (err) {
-        return res.status(500).json({ message: 'Error updating session information' })
-      }
-    })
+    saveData();
+
     res.statusCode = 200
     res.json({ userData: getDataForUser(newData.sessions[req.cookies.sessionId].username) })
   }

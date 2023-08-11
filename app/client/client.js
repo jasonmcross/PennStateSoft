@@ -1,26 +1,10 @@
 let GV_USER_DATA;
 
+
+
 async function removeAttendee(id, att)
 {
-  console.log ("removeAttendee:", id, att);
-  // Find the associated meeting.
-    
-  // Remove the attendee
 
-  // Update localstorage with the new datastructure
-
-
-  // If server based, then send the request to the server where it would then handle the remove
-  /*
-  Server already has a route ready to receive the request. Here is the route model...
-
-  app.post ('/removeAttendees', (req,res)=>{
-    console.log ("newAttendees", req.body);
-    removeAttendee(req.body.meetingId, req.body.attendee);
-    res.json({message:"Added"});
-  })
-  
-  */
 
   await fetch('/removeAttendees', {
     method: 'POST',
@@ -74,7 +58,6 @@ if (urlArr[urlArr.length - 2] === 'meeting') {
   document.getElementById('meeting-time').innerHTML = currentMeeting.meetingTime
   document.getElementById('organizer').innerHTML = currentMeeting.organizer
   document.getElementById('room-type').innerHTML = currentMeeting.type
-  // Currently reprints attendees as just one string. Not as list elements
   document.getElementById('attendees-list').innerHTML = currentMeeting.attendees
 }
 if (window.location.pathname === '/create-meeting') {
@@ -216,21 +199,8 @@ document.getElementById('add-attendee-btn').addEventListener('click', async func
 
     // Get the meeting ID
     const meetingID = document.getElementById('hiddenMeetingIdField').value
-    
-    // Update localstorage? XXXXXXXXXXXXXXXXX
-    // Perhaps contemplate the relationship between data on localstorage vs data on server XXXXXX
 
-    // Go through the meetings.
-    // Find the one with the matching id.
-    // Add the new attendee(s) to that meeting.
-    // XXXXXXXXX
-
-    // Use fetch to send the meeting ID and new attendee to the server.
-    // Need to create route on server to handle action XXXXXXXX
-    // await fetch ....
-
-    // Wait an OKAY response from the server.
-    alert("Adding " + newAttendees + " to meeting with ID " + meetingID)
+    alert("Adding " + newAttendees + " to meeting with ID ")
     console.log (GV_USER_DATA.meetings[GV_MEETING_IDX])
     GV_USER_DATA.meetings[GV_MEETING_IDX].attendees+", "+newAttendees;
     const data ={
@@ -446,14 +416,6 @@ async function openModal (idx, meetingId, meetingAttendees) {
     attendeesList.appendChild(newLI);
 
   }
-
-  // let html = ""
-  // for (let attendee of meetingAttendees.split(",")) {
-  //   //html += `<li>${attendee} <button onClick="removeAttendee('${meetingId}', '${attendee}')">X</button></li>\n`
-  //   html += `<li>${attendee} <button onClick="test();">X</button></li>\n`
-  // }
-  // console.log ("HTML", html);
-  // attendeesList.innerHTML = html
 
   // Set the hidden field with meetingId
   // Needed because changes to attendees need to be attached to a specific meeting
